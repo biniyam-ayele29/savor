@@ -19,7 +19,6 @@ export default function OrderPage() {
     const { data: companies = [], isLoading: companiesLoading } = useCompanies();
     const { data: orders = [], isLoading: ordersLoading } = useOrders();
     const createOrder = useCreateOrder();
-    const updateStatus = useUpdateOrderStatus();
 
     const [cart, setCart] = useState<OrderItem[]>([]);
     const [selectedCompanyId, setSelectedCompanyId] = useState(companyId || '');
@@ -74,18 +73,6 @@ export default function OrderPage() {
         });
     };
 
-    const handleUpdateStatus = async (orderId: string, currentStatus: OrderStatus) => {
-        const statusFlow: OrderStatus[] = ['pending', 'preparing', 'delivering', 'delivered'];
-        const currentIndex = statusFlow.indexOf(currentStatus);
-        if (currentIndex < statusFlow.length - 1) {
-            const nextStatus = statusFlow[currentIndex + 1];
-            try {
-                await updateStatus.mutateAsync({ orderId, status: nextStatus });
-            } catch (error) {
-                console.error('Error updating status:', error);
-            }
-        }
-    };
 
     const placeOrder = async () => {
         if (!selectedCompanyId || !selectedEmployeeId) {
@@ -193,13 +180,7 @@ export default function OrderPage() {
                                                 <Text style={{ fontSize: 10, color: '#94a3b8', fontWeight: '600' }}>#{order.id.slice(0, 4)}</Text>
                                             </View>
                                             <Text style={{ fontWeight: '800', color: '#111827', fontSize: 14 }}>{order.employeeName}</Text>
-                                            <Text style={{ color: '#64748b', fontSize: 12, marginBottom: 12 }}>{order.items.length} items • ETB {order.totalPrice}</Text>
-                                            <Pressable
-                                                onPress={() => handleUpdateStatus(order.id, order.status)}
-                                                style={{ backgroundColor: '#111827', paddingVertical: 8, borderRadius: 10, alignItems: 'center' }}
-                                            >
-                                                <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>Next Step →</Text>
-                                            </Pressable>
+                                            <Text style={{ color: '#64748b', fontSize: 12 }}>{order.items.length} items • ETB {order.totalPrice}</Text>
                                         </View>
                                     );
                                 })}

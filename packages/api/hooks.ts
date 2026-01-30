@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { Order, MenuItem, OrderItem, OrderStatus, Company, Employee } from './types';
@@ -22,11 +25,12 @@ export function useMenuItems() {
                 id: item.id,
                 name: item.name,
                 price: item.price,
-                category: item.category as 'drinks' | 'food' | 'snacks',
+                category: item.category,
                 available: item.available,
-                image: item.image || undefined
+                image: item.image
             }));
-        }
+        },
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 }
 
