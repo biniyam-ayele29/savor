@@ -157,7 +157,7 @@ export default function OrdersPage() {
                                         <View>
                                             <Text style={{ fontSize: 18, fontWeight: '800', color: '#111827' }}>{order.employeeName || 'Unknown Employee'}</Text>
                                             <Text style={{ color: '#6b7280', fontSize: 14, fontWeight: '500' }}>
-                                                Floor {order.floorNumber} • Suite {order.suiteNumber}
+                                                Floor {order.floorNumber}
                                             </Text>
                                         </View>
                                     </View>

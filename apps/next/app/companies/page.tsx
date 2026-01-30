@@ -25,14 +25,12 @@ export default function CompaniesPage() {
             await createCompany.mutateAsync({
                 name,
                 floorNumber: Number(floor),
-                suiteNumber: suite,
                 contactEmail: email,
                 isActive: true
             });
             setShowForm(false);
             setName('');
             setFloor('');
-            setSuite('');
             setEmail('');
         } catch (error) {
             console.error('Error adding company:', error);
@@ -138,7 +136,6 @@ export default function CompaniesPage() {
                             {floorCompanies.map((company) => (
                                 <View key={company.id} style={{ flexDirection: 'row', padding: 16, borderBottom: '1px solid #f3f4f6', alignItems: 'center' }}>
                                     <Text style={{ flex: 2, fontSize: 16, fontWeight: '500' }}>{company.name}</Text>
-                                    <Text style={{ flex: 1, color: '#4b5563' }}>{company.suiteNumber}</Text>
                                     <Text style={{ flex: 2, color: '#4b5563' }}>{company.contactEmail || '-'}</Text>
                                     <View style={{ flex: 1 }}>
                                         <View style={{ backgroundColor: company.isActive ? '#dcfce7' : '#fee2e2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999, alignSelf: 'flex-start' }}>

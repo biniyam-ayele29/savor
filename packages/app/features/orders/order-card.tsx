@@ -21,7 +21,7 @@ export function OrderCard({ order, onPress, showTimer }: OrderCardProps) {
             <View className="flex-row justify-between items-start mb-2">
                 <View>
                     <Text className="font-bold text-lg text-foreground">
-                        {formatLocation(order.floorNumber, order.suiteNumber)}
+                        {formatLocation(order.floorNumber)}
                     </Text>
                     <Text className="text-muted-foreground text-sm">
                         #{order.id.slice(-4)}

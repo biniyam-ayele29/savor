@@ -16,21 +16,9 @@ export function useMenuItems() {
                 console.warn('Error fetching menu items, using fallback:', error);
             }
 
-            const items = (data && data.length > 0) ? data : [
-                // Fallback Menu Items with valid-looking UUIDs
-                { id: '11111111-1111-4111-8111-111111111111', name: 'Espresso', price: 45, category: 'drinks', available: true },
-                { id: '22222222-2222-4222-8222-222222222222', name: 'Cappuccino', price: 55, category: 'drinks', available: true },
-                { id: '33333333-3333-4333-8333-333333333333', name: 'Latte', price: 55, category: 'drinks', available: true },
-                { id: '44444444-4444-4444-8444-444444444444', name: 'Mocha', price: 60, category: 'drinks', available: true },
-                { id: '55555555-5555-4555-8555-555555555555', name: 'Croissant', price: 35, category: 'food', available: true },
-                { id: '66666666-6666-4666-8666-666666666666', name: 'Blueberry Muffin', price: 40, category: 'food', available: true },
-                { id: '77777777-7777-4777-8777-777777777777', name: 'Chicken Sandwich', price: 75, category: 'food', available: true },
-                { id: '88888888-8888-4888-8888-888888888888', name: 'Veggie Wrap', price: 70, category: 'food', available: true },
-                { id: '99999999-9999-4999-8999-999999999999', name: 'Cookie', price: 25, category: 'snacks', available: true },
-                { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', name: 'Brownie', price: 30, category: 'snacks', available: true }
-            ];
+            if (!data || data.length === 0) return [];
 
-            return items.map((item: any): MenuItem => ({
+            return data.map((item: any): MenuItem => ({
                 id: item.id,
                 name: item.name,
                 price: item.price,
@@ -92,7 +80,6 @@ export function useOrders() {
                     })),
                 totalPrice: Number(order.total_price),
                 floorNumber: order.floor_number,
-                suiteNumber: order.suite_number,
                 status: order.status as OrderStatus,
                 createdAt: order.created_at,
                 companyId: order.company_id,
@@ -115,10 +102,9 @@ export function useCreateOrder() {
                 .insert({
                     total_price: order.totalPrice,
                     floor_number: order.floorNumber,
-                    suite_number: order.suiteNumber,
-                    status: order.status,
                     company_id: order.companyId,
-                    employee_id: order.employeeId
+                    employee_id: order.employeeId,
+                    status: order.status
                 })
                 .select()
                 .single();
@@ -182,7 +168,6 @@ export function useCompanies() {
                 id: item.id,
                 name: item.name,
                 floorNumber: item.floor_number,
-                suiteNumber: item.suite_number,
                 contactEmail: item.contact_email,
                 contactPhone: item.contact_phone,
                 logoUrl: item.logo_url,
@@ -204,7 +189,6 @@ export function useCreateCompany() {
                 .insert({
                     name: company.name,
                     floor_number: company.floorNumber,
-                    suite_number: company.suiteNumber,
                     contact_email: company.contactEmail,
                     contact_phone: company.contactPhone,
                     logo_url: company.logoUrl

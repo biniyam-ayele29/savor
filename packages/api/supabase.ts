@@ -42,7 +42,6 @@ export type Database = {
                     id: string;
                     total_price: number;
                     floor_number: number;
-                    suite_number: string;
                     status: 'pending' | 'preparing' | 'delivering' | 'delivered';
                     company_id: string | null;
                     employee_id: string | null;
@@ -53,7 +52,6 @@ export type Database = {
                     id?: string;
                     total_price: number;
                     floor_number: number;
-                    suite_number: string;
                     status?: 'pending' | 'preparing' | 'delivering' | 'delivered';
                     company_id?: string | null;
                     employee_id?: string | null;
@@ -64,7 +62,6 @@ export type Database = {
                     id?: string;
                     total_price?: number;
                     floor_number?: number;
-                    suite_number?: string;
                     status?: 'pending' | 'preparing' | 'delivering' | 'delivered';
                     company_id?: string | null;
                     employee_id?: string | null;
@@ -106,7 +103,6 @@ export type Database = {
                     id: string;
                     name: string;
                     floor_number: number;
-                    suite_number: string;
                     contact_email: string | null;
                     contact_phone: string | null;
                     logo_url: string | null;
@@ -118,7 +114,6 @@ export type Database = {
                     id?: string;
                     name: string;
                     floor_number: number;
-                    suite_number: string;
                     contact_email?: string | null;
                     contact_phone?: string | null;
                     logo_url?: string | null;
@@ -130,7 +125,6 @@ export type Database = {
                     id?: string;
                     name?: string;
                     floor_number?: number;
-                    suite_number?: string;
                     contact_email?: string | null;
                     contact_phone?: string | null;
                     logo_url?: string | null;

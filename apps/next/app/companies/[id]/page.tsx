@@ -67,7 +67,7 @@ export default function CompanyDetailPage() {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
                         <View>
                             <Text style={{ fontSize: 40, fontWeight: '900', color: '#111827', letterSpacing: -1.5 }}>{company.name}</Text>
-                            <Text style={{ fontSize: 20, color: '#6b7280', fontWeight: '500' }}>Floor {company.floorNumber} • Suite {company.suiteNumber}</Text>
+                            <Text style={{ fontSize: 20, color: '#6b7280', fontWeight: '500' }}>Floor {company.floorNumber}</Text>
                         </View>
                         <View style={{ backgroundColor: company.isActive ? '#ecfdf5' : '#fef2f2', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, border: `1px solid ${company.isActive ? '#a7f3d0' : '#fecaca'}` }}>
                             <Text style={{ color: company.isActive ? '#059669' : '#dc2626', fontWeight: '800', fontSize: 14 }}>
@@ -99,13 +99,13 @@ export default function CompanyDetailPage() {
                         { id: 'orders', label: 'Order History 🛒', count: companyOrders.length },
                         { id: 'admins', label: 'Company Admins 🛡️', count: admins.length }
                     ].map((tab) => (
-                        <Pressable 
+                        <Pressable
                             key={tab.id}
                             onPress={() => setAdminView(tab.id as any)}
-                            style={{ 
-                                paddingHorizontal: 24, 
-                                paddingVertical: 14, 
-                                borderRadius: 16, 
+                            style={{
+                                paddingHorizontal: 24,
+                                paddingVertical: 14,
+                                borderRadius: 16,
                                 backgroundColor: adminView === tab.id ? '#111827' : 'white',
                                 borderWidth: 1,
                                 borderColor: adminView === tab.id ? '#111827' : '#e5e7eb',
@@ -226,15 +226,15 @@ export default function CompanyDetailPage() {
                                                 onChangeText={setNewAdminPassword}
                                             />
                                         </View>
-                                        
-                                        <Pressable 
+
+                                        <Pressable
                                             onPress={handleAddAdmin}
                                             disabled={isCreating}
-                                            style={{ 
-                                                backgroundColor: '#ea580c', 
-                                                padding: 18, 
-                                                borderRadius: 14, 
-                                                alignItems: 'center', 
+                                            style={{
+                                                backgroundColor: '#ea580c',
+                                                padding: 18,
+                                                borderRadius: 14,
+                                                alignItems: 'center',
                                                 marginTop: 12,
                                                 opacity: isCreating ? 0.7 : 1,
                                                 shadowColor: '#ea580c',

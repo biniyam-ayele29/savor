@@ -62,7 +62,6 @@ export default function OrderPage() {
 
     // Auto-update location based on user's company
     const floor = userCompanyDetails?.floorNumber?.toString() || '';
-    const suite = userCompanyDetails?.suiteNumber || '';
 
     const addToCart = (item: any) => {
         if (!item.available) return;
@@ -101,7 +100,6 @@ export default function OrderPage() {
                 items: cart,
                 totalPrice: total,
                 floorNumber: Number(floor),
-                suiteNumber: suite,
                 companyId: selectedCompanyId,
                 employeeId: selectedEmployeeId,
                 status: 'pending'
@@ -132,7 +130,7 @@ export default function OrderPage() {
         );
     }
 
-    console.log('Order Page Loaded - Menu items:', menu.length, 'Company:', companyName, 'Floor:', floor, 'Suite:', suite);
+    console.log('Order Page Loaded - Menu items:', menu.length, 'Company:', companyName, 'Floor:', floor);
 
     const displayHeaderLabel = companyName ? `@${companyName.replace(/\s+/g, '')}` : 'Office Cafe';
 
@@ -272,7 +270,7 @@ export default function OrderPage() {
                                     <View style={{ backgroundColor: '#f8fafc', padding: 16, borderRadius: 16, border: '1px solid #e2e8f0' }}>
                                         <Text style={{ fontWeight: '800', color: '#111827', fontSize: 15 }}>{companyName || 'Office Workspace'}</Text>
                                         <Text style={{ color: '#64748b', fontSize: 13, marginTop: 4, fontWeight: '600' }}>
-                                            {floor ? `FLOOR ${floor} • SUITE ${suite}` : 'Workspace Profile'}
+                                            {floor ? `FLOOR ${floor}` : 'Workspace Profile'}
                                         </Text>
                                     </View>
                                 </View>

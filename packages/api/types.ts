@@ -23,7 +23,6 @@ export interface Order {
     items: OrderItem[];
     totalPrice: number;
     floorNumber: number;
-    suiteNumber: string;
     status: OrderStatus;
     createdAt: string; // ISO string
     companyId?: string;
@@ -35,7 +34,6 @@ export interface Company {
     id: string;
     name: string;
     floorNumber: number;
-    suiteNumber: string;
     contactEmail?: string;
     contactPhone?: string;
     logoUrl?: string;
