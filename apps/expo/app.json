@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "solito-blank",
+    "slug": "universal-app",
+    "version": "1.0.0",
+    "scheme": "universal-app",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.benny.universalapp"
+    },
+    "android": {
+      "package": "com.benny.universalapp"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "newArchEnabled": true,
+    "experiments": {
+      "reactCanary": true
+    }
+  }
+}
