@@ -171,6 +171,52 @@ export type Database = {
                     updated_at?: string;
                 };
             };
+            profiles: {
+                Row: {
+                    id: string;
+                    company_id: string | null;
+                    role: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id: string;
+                    company_id?: string | null;
+                    role?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    company_id?: string | null;
+                    role?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+            };
+            company_admins: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    company_id: string;
+                    role: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    company_id: string;
+                    role?: string;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    user_id?: string;
+                    company_id?: string;
+                    role?: string;
+                    created_at?: string;
+                };
+            };
         };
     };
 };

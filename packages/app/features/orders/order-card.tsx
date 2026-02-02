@@ -2,7 +2,6 @@ import { View, Text, Pressable } from 'react-native';
 import { Order } from '@my-app/api';
 import { StatusBadge } from './status-badge';
 import { useOrderTimer } from './use-order-timer';
-import { formatLocation } from '../location/validator';
 
 interface OrderCardProps {
     order: Order;
@@ -16,34 +15,61 @@ export function OrderCard({ order, onPress, showTimer }: OrderCardProps) {
     return (
         <Pressable
             onPress={() => onPress?.(order)}
-            className="bg-card p-4 rounded-lg border border-border mb-3 active:opacity-70"
+            style={({ pressed }) => ({
+                backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
+                padding: 20,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: '#e7e5e4',
+                marginBottom: 16,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.03,
+                shadowRadius: 8,
+                opacity: pressed ? 0.95 : 1,
+            })}
         >
-            <View className="flex-row justify-between items-start mb-2">
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                 <View>
-                    <Text className="font-bold text-lg text-foreground">
-                        {formatLocation(order.floorNumber)}
+                    <Text style={{ fontWeight: '800', fontSize: 17, color: '#1c1917' }}>
+                        Floor {order.floorNumber}
                     </Text>
-                    <Text className="text-muted-foreground text-sm">
-                        #{order.id.slice(-4)}
+                    <Text style={{ color: '#78716c', fontSize: 13, marginTop: 2 }}>
+                        #{order.id.slice(-8)}
                     </Text>
                 </View>
                 <StatusBadge status={order.status} />
             </View>
 
-            <View className="mb-3">
+            <View style={{ marginBottom: 12 }}>
                 {order.items.map((item) => (
-                    <Text key={item.itemId} className="text-foreground">
+                    <Text key={item.itemId} style={{ color: '#44403c', fontSize: 14, marginBottom: 4 }}>
                         {item.quantity}x {item.name}
                     </Text>
                 ))}
             </View>
 
-            <View className="flex-row justify-between items-center mt-2 border-t border-border pt-2">
-                <Text className="font-bold text-foreground">
-                    ${order.totalPrice.toFixed(2)}
-                </Text>
+            <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: 12,
+                paddingTop: 12,
+                borderTopWidth: 1,
+                borderTopColor: '#f5f5f4',
+            }}>
+                <View style={{
+                    backgroundImage: 'linear-gradient(90deg, #b45309, #ea580c)',
+                    paddingHorizontal: 12,
+                    paddingVertical: 4,
+                    borderRadius: 8,
+                }}>
+                    <Text style={{ fontWeight: '800', color: '#ffffff', fontSize: 15, fontVariant: ['tabular-nums'] }}>
+                        ETB {order.totalPrice.toFixed(2)}
+                    </Text>
+                </View>
                 {showTimer && order.status !== 'delivered' && (
-                    <Text className="text-sm font-mono text-muted-foreground">
+                    <Text style={{ fontSize: 13, color: '#78716c', fontVariant: ['tabular-nums'] }}>
                         {formatTime}
                     </Text>
                 )}

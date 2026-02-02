@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator } from 'react-native';
 import { useCompanies, useCreateCompany, Company } from '@my-app/api';
 import { TextLink } from 'solito/link';
 
@@ -12,11 +12,10 @@ export default function CompaniesPage() {
     const [showForm, setShowForm] = useState(false);
     const [name, setName] = useState('');
     const [floor, setFloor] = useState('');
-    const [suite, setSuite] = useState('');
     const [email, setEmail] = useState('');
 
     const handleAddCompany = async () => {
-        if (!name || !floor || !suite) {
+        if (!name || !floor) {
             alert('Please fill in required fields');
             return;
         }
@@ -47,106 +46,184 @@ export default function CompaniesPage() {
 
     if (isLoading) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 24, color: '#6b7280' }}>Loading companies...</Text>
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 100%)',
+            }}>
+                <View style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundImage: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 20,
+                }}>
+                    <ActivityIndicator size="large" color="#b45309" />
+                </View>
+                <Text style={{ fontSize: 15, color: '#78716c', fontWeight: '600' }}>Loading companies...</Text>
             </View>
         );
     }
 
     return (
-        <ScrollView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-            <View style={{ maxWidth: 1280, marginHorizontal: 'auto', width: '100%', padding: 32 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+        <ScrollView
+            style={{ flex: 1, backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 50%, #e7e5e4 100%)' }}
+            contentContainerStyle={{ paddingVertical: 40 }}
+        >
+            <View style={{ maxWidth: 1280, marginHorizontal: 'auto', width: '100%', padding: 40 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40, flexWrap: 'wrap', gap: 24 }}>
                     <View>
-                        <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#1f2937' }}>Registered Companies 🏢</Text>
-                        <Text style={{ color: '#6b7280', fontSize: 18 }}>Manage office residents and their locations</Text>
+                        <Text style={{ fontSize: 36, fontWeight: '900', color: '#1c1917', letterSpacing: -0.5 }}>Registered Companies</Text>
+                        <Text style={{ color: '#78716c', fontSize: 16, marginTop: 6 }}>Manage office residents and their locations</Text>
                     </View>
                     <Pressable
                         onPress={() => setShowForm(!showForm)}
-                        style={{ backgroundColor: '#ea580c', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                        style={({ pressed }) => ({
+                            backgroundImage: showForm ? 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)' : 'linear-gradient(135deg, #ea580c 0%, #b45309 100%)',
+                            paddingHorizontal: 28,
+                            paddingVertical: 14,
+                            borderRadius: 14,
+                            shadowColor: showForm ? 'transparent' : '#b45309',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: showForm ? 0 : 0.3,
+                            shadowRadius: 12,
+                            opacity: pressed ? 0.95 : 1,
+                        })}
                     >
-                        <Text style={{ color: 'white', fontWeight: 'bold' }}>{showForm ? 'Cancel' : '+ Add Company'}</Text>
+                        <Text style={{ color: showForm ? '#78716c' : 'white', fontWeight: '700', fontSize: 15 }}>{showForm ? 'Cancel' : '+ Add Company'}</Text>
                     </Pressable>
                 </View>
 
                 {showForm && (
-                    <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 24, marginBottom: 32, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb' }}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>New Company Details</Text>
-                        <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
-                            <View style={{ flex: 1, minWidth: 250 }}>
-                                <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 8 }}>Company Name *</Text>
-                                <TextInput
-                                    style={{ backgroundColor: '#f9fafb', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
-                                    placeholder="e.g. Tech Innovators"
-                                    value={name}
-                                    onChangeText={setName}
-                                />
-                            </View>
-                            <View style={{ width: 100 }}>
-                                <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 8 }}>Floor *</Text>
-                                <TextInput
-                                    style={{ backgroundColor: '#f9fafb', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
-                                    placeholder="1-10"
-                                    value={floor}
-                                    onChangeText={setFloor}
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                            <View style={{ width: 150 }}>
-                                <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 8 }}>Suite *</Text>
-                                <TextInput
-                                    style={{ backgroundColor: '#f9fafb', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
-                                    placeholder="e.g. 101A"
-                                    value={suite}
-                                    onChangeText={setSuite}
-                                />
-                            </View>
-                            <View style={{ flex: 1, minWidth: 250 }}>
-                                <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 8 }}>Contact Email</Text>
-                                <TextInput
-                                    style={{ backgroundColor: '#f9fafb', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
-                                    placeholder="email@company.com"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                />
-                            </View>
+                    <View style={{
+                        backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
+                        borderRadius: 20,
+                        padding: 28,
+                        marginBottom: 40,
+                        borderWidth: 1,
+                        borderColor: '#e7e5e4',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.05,
+                        shadowRadius: 16,
+                    }}>
+                        <Text style={{ fontSize: 20, fontWeight: '800', marginBottom: 24, color: '#1c1917' }}>New Company Details</Text>
+                        <View style={{ flexDirection: 'row', gap: 20, flexWrap: 'wrap' }}>
+                            {[
+                                { label: 'Company Name *', value: name, set: setName, placeholder: 'e.g. Tech Innovators', flex: 1, minWidth: 250 },
+                                { label: 'Floor *', value: floor, set: setFloor, placeholder: '1-10', width: 100, keyboardType: 'numeric' as const },
+                                { label: 'Contact Email', value: email, set: setEmail, placeholder: 'email@company.com', flex: 1, minWidth: 250 },
+                            ].map(({ label, value, set, placeholder, flex, minWidth, width, keyboardType }) => (
+                                <View key={label} style={{ flex: flex ?? 0, minWidth, width }}>
+                                    <Text style={{ fontSize: 13, fontWeight: '600', marginBottom: 8, color: '#44403c' }}>{label}</Text>
+                                    <TextInput
+                                        style={{
+                                            backgroundColor: '#fafaf9',
+                                            padding: 14,
+                                            borderRadius: 12,
+                                            borderWidth: 1,
+                                            borderColor: '#e7e5e4',
+                                            fontSize: 15,
+                                            color: '#1c1917',
+                                            width: width ?? undefined,
+                                        }}
+                                        placeholder={placeholder}
+                                        placeholderTextColor="#a8a29e"
+                                        value={value}
+                                        onChangeText={set}
+                                        keyboardType={keyboardType}
+                                    />
+                                </View>
+                            ))}
                         </View>
                         <Pressable
                             onPress={handleAddCompany}
-                            style={{ backgroundColor: '#10b981', padding: 16, borderRadius: 8, marginTop: 24, alignItems: 'center' }}
+                            style={({ pressed }) => ({
+                                backgroundImage: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                padding: 16,
+                                borderRadius: 12,
+                                marginTop: 28,
+                                alignItems: 'center',
+                                shadowColor: '#059669',
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 12,
+                                opacity: pressed ? 0.95 : 1,
+                            })}
                         >
-                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Register Company</Text>
+                            <Text style={{ color: 'white', fontWeight: '700', fontSize: 15 }}>Register Company</Text>
                         </Pressable>
                     </View>
                 )}
 
                 {Object.entries(groupedCompanies).sort().map(([floorLabel, floorCompanies]) => (
                     <View key={floorLabel} style={{ marginBottom: 40 }}>
-                        <View style={{ backgroundColor: '#f3f4f6', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, marginBottom: 16 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#4b5563' }}>{floorLabel}</Text>
+                        <View style={{
+                            backgroundImage: 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',
+                            paddingHorizontal: 18,
+                            paddingVertical: 10,
+                            borderRadius: 12,
+                            marginBottom: 16,
+                            borderWidth: 1,
+                            borderColor: '#e7e5e4',
+                        }}>
+                            <Text style={{ fontSize: 17, fontWeight: '700', color: '#44403c' }}>{floorLabel}</Text>
                         </View>
-                        <View style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-                            <View style={{ flexDirection: 'row', backgroundColor: '#f9fafb', padding: 16, borderBottom: '1px solid #e5e7eb' }}>
-                                <Text style={{ flex: 2, fontWeight: 'bold', color: '#6b7280' }}>Company Name</Text>
-                                <Text style={{ flex: 1, fontWeight: 'bold', color: '#6b7280' }}>Suite</Text>
-                                <Text style={{ flex: 2, fontWeight: 'bold', color: '#6b7280' }}>Contact Email</Text>
-                                <Text style={{ flex: 1, fontWeight: 'bold', color: '#6b7280' }}>Status</Text>
-                                <Text style={{ width: 80, fontWeight: 'bold', color: '#6b7280' }}>Actions</Text>
+                        <View style={{
+                            backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
+                            borderRadius: 20,
+                            overflow: 'hidden',
+                            borderWidth: 1,
+                            borderColor: '#e7e5e4',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.04,
+                            shadowRadius: 12,
+                        }}>
+                            <View style={{
+                                flexDirection: 'row',
+                                backgroundImage: 'linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%)',
+                                padding: 18,
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#e7e5e4',
+                            }}>
+                                <Text style={{ flex: 2, fontWeight: '700', color: '#78716c', textTransform: 'uppercase', fontSize: 11, letterSpacing: 1 }}>Company Name</Text>
+                                <Text style={{ flex: 2, fontWeight: '700', color: '#78716c', textTransform: 'uppercase', fontSize: 11, letterSpacing: 1 }}>Contact Email</Text>
+                                <Text style={{ flex: 1, fontWeight: '700', color: '#78716c', textTransform: 'uppercase', fontSize: 11, letterSpacing: 1 }}>Status</Text>
+                                <Text style={{ width: 90, fontWeight: '700', color: '#78716c', textTransform: 'uppercase', fontSize: 11, letterSpacing: 1 }}>Actions</Text>
                             </View>
                             {floorCompanies.map((company) => (
-                                <View key={company.id} style={{ flexDirection: 'row', padding: 16, borderBottom: '1px solid #f3f4f6', alignItems: 'center' }}>
-                                    <Text style={{ flex: 2, fontSize: 16, fontWeight: '500' }}>{company.name}</Text>
-                                    <Text style={{ flex: 2, color: '#4b5563' }}>{company.contactEmail || '-'}</Text>
+                                <View key={company.id} style={{ flexDirection: 'row', padding: 18, borderBottomWidth: 1, borderBottomColor: '#f5f5f4', alignItems: 'center' }}>
+                                    <Text style={{ flex: 2, fontSize: 15, fontWeight: '600', color: '#1c1917' }}>{company.name}</Text>
+                                    <Text style={{ flex: 2, color: '#44403c', fontSize: 14 }}>{company.contactEmail || '-'}</Text>
                                     <View style={{ flex: 1 }}>
-                                        <View style={{ backgroundColor: company.isActive ? '#dcfce7' : '#fee2e2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999, alignSelf: 'flex-start' }}>
-                                            <Text style={{ color: company.isActive ? '#166534' : '#991b1b', fontSize: 12, fontWeight: 'bold' }}>
+                                        <View style={{
+                                            backgroundImage: company.isActive ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)' : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                                            paddingHorizontal: 10,
+                                            paddingVertical: 6,
+                                            borderRadius: 10,
+                                            alignSelf: 'flex-start',
+                                            borderWidth: 1,
+                                            borderColor: company.isActive ? '#a7f3d0' : '#fecaca',
+                                        }}>
+                                            <Text style={{ color: company.isActive ? '#047857' : '#dc2626', fontSize: 12, fontWeight: '700' }}>
                                                 {company.isActive ? 'Active' : 'Inactive'}
                                             </Text>
                                         </View>
                                     </View>
                                     <TextLink href={`/companies/${company.id}`}>
-                                        <View style={{ backgroundColor: '#f3f4f6', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 }}>
-                                            <Text style={{ color: '#ea580c', fontSize: 13, fontWeight: '500' }}>Details</Text>
+                                        <View style={{
+                                            backgroundImage: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                                            paddingHorizontal: 14,
+                                            paddingVertical: 8,
+                                            borderRadius: 10,
+                                            borderWidth: 1,
+                                            borderColor: '#fed7aa',
+                                        }}>
+                                            <Text style={{ color: '#b45309', fontSize: 13, fontWeight: '700' }}>Details</Text>
                                         </View>
                                     </TextLink>
                                 </View>
@@ -156,15 +233,43 @@ export default function CompaniesPage() {
                 ))}
 
                 {companies.length === 0 && !showForm && (
-                    <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 64, alignItems: 'center', border: '1px dashed #d1d5db' }}>
-                        <Text style={{ fontSize: 48, marginBottom: 16 }}>🏢</Text>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6b7280' }}>No companies registered yet</Text>
-                        <Text style={{ color: '#9ca3af', marginBottom: 24 }}>Start by adding companies to manage orders by office.</Text>
+                    <View style={{
+                        backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
+                        borderRadius: 20,
+                        padding: 64,
+                        alignItems: 'center',
+                        borderWidth: 2,
+                        borderColor: '#e7e5e4',
+                        borderStyle: 'dashed',
+                    }}>
+                        <View style={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 40,
+                            backgroundImage: 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: 24,
+                        }}>
+                            <Text style={{ fontSize: 40 }}>🏢</Text>
+                        </View>
+                        <Text style={{ fontSize: 20, fontWeight: '800', color: '#1c1917', marginBottom: 8 }}>No companies registered yet</Text>
+                        <Text style={{ color: '#78716c', marginBottom: 28, textAlign: 'center' }}>Start by adding companies to manage orders by office.</Text>
                         <Pressable
                             onPress={() => setShowForm(true)}
-                            style={{ backgroundColor: '#ea580c', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                            style={({ pressed }) => ({
+                                backgroundImage: 'linear-gradient(135deg, #ea580c 0%, #b45309 100%)',
+                                paddingHorizontal: 28,
+                                paddingVertical: 14,
+                                borderRadius: 14,
+                                shadowColor: '#b45309',
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 12,
+                                opacity: pressed ? 0.95 : 1,
+                            })}
                         >
-                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Register Your First Company</Text>
+                            <Text style={{ color: 'white', fontWeight: '700', fontSize: 15 }}>Register Your First Company</Text>
                         </Pressable>
                     </View>
                 )}

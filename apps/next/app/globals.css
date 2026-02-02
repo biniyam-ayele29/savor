@@ -36,3 +36,16 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
+
+/* Order page recipient select - polished focus/hover */
+.order-recipient-select {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.order-recipient-select:focus {
+  outline: none;
+  border-color: #b45309 !important;
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.15);
+}
+.order-recipient-select:hover {
+  border-color: #d6d3d1 !important;
+}
