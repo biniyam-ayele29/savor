@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { MenuItem } from '@my-app/api';
 
@@ -41,6 +42,18 @@ export function MenuList({ items, onItemPress, renderAction }: MenuListProps) {
         return acc;
     }, {} as Record<string, MenuItem[]>);
 
+    // Keep track of which categories are expanded
+    const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(
+        Object.keys(groupedItems).reduce((acc, cat) => ({ ...acc, [cat]: true }), {})
+    );
+
+    const toggleCategory = (category: string) => {
+        setExpandedCategories(prev => ({
+            ...prev,
+            [category]: !prev[category]
+        }));
+    };
+
     return (
         <View style={{ flex: 1, width: '100%' }}>
             {Object.entries(groupedItems).map(([category, categoryItems]) => {
@@ -51,114 +64,169 @@ export function MenuList({ items, onItemPress, renderAction }: MenuListProps) {
                     btnGradient: 'linear-gradient(135deg, #1c1917 0%, #44403c 100%)',
                 };
 
+                const isExpanded = expandedCategories[category];
+
                 return (
-                    <View key={category} style={{ marginBottom: 40 }}>
-                        <View style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            marginBottom: 20,
-                            gap: 14,
-                        }}>
+                    <View key={category} style={{ marginBottom: isExpanded ? 40 : 16 }}>
+                        <Pressable
+                            onPress={() => toggleCategory(category)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: isExpanded ? 20 : 0,
+                                paddingVertical: 8,
+                            }}
+                        >
                             <View style={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: 12,
-                                backgroundImage: theme.gradient,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 14,
+                            }}>
+                                <View style={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 12,
+                                    backgroundImage: theme.gradient,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderWidth: 1,
+                                    borderColor: '#e7e5e4',
+                                }}>
+                                    <Text style={{ fontSize: 22 }}>{categoryIcons[category] || '🍽️'}</Text>
+                                </View>
+                                <View>
+                                    <Text style={{
+                                        fontSize: 20,
+                                        fontWeight: '800',
+                                        color: '#1c1917',
+                                        textTransform: 'capitalize',
+                                        letterSpacing: -0.3,
+                                    }}>{category}</Text>
+                                    <Text style={{ fontSize: 11, color: '#a8a29e', fontWeight: '600' }}>
+                                        {categoryItems.length} items
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                backgroundColor: isExpanded ? '#f5f5f4' : theme.bg,
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 borderWidth: 1,
-                                borderColor: '#e7e5e4',
+                                borderColor: isExpanded ? '#e7e5e4' : theme.primary + '20',
                             }}>
-                                <Text style={{ fontSize: 22 }}>{categoryIcons[category] || '🍽️'}</Text>
+                                <Text style={{ fontSize: 16, color: isExpanded ? '#78716c' : theme.primary, fontWeight: '800' }}>
+                                    {isExpanded ? '−' : '+'}
+                                </Text>
                             </View>
-                            <Text style={{
-                                fontSize: 20,
-                                fontWeight: '800',
-                                color: '#1c1917',
-                                textTransform: 'capitalize',
-                                letterSpacing: -0.3,
-                            }}>{category}</Text>
-                        </View>
+                        </Pressable>
 
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-                            {categoryItems.map((item) => (
-                                <Pressable
-                                    key={item.id}
-                                    onPress={() => item.available && onItemPress(item)}
-                                    style={({ pressed }) => ({
-                                        backgroundColor: '#ffffff',
-                                        borderRadius: 16,
-                                        padding: 0,
-                                        borderWidth: 1,
-                                        borderColor: item.available ? '#e7e5e4' : '#e7e5e4',
-                                        width: 280,
-                                        overflow: 'hidden',
-                                        opacity: item.available ? 1 : 0.6,
-                                        transform: [{ scale: pressed ? 0.98 : 1 }],
-                                        shadowColor: theme.primary,
-                                        shadowOffset: { width: 0, height: 4 },
-                                        shadowOpacity: item.available ? 0.08 : 0.04,
-                                        shadowRadius: 12,
-                                        elevation: 2,
-                                    })}
-                                >
-                                    <View style={{ padding: 20 }}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-                                            <View style={{ flex: 1, marginRight: 12 }}>
-                                                <Text style={{
-                                                    fontSize: 17,
-                                                    fontWeight: '700',
-                                                    color: '#1c1917',
-                                                    marginBottom: 4,
-                                                    letterSpacing: -0.2,
-                                                }}>{item.name}</Text>
-                                                <Text style={{
-                                                    fontSize: 12,
-                                                    color: item.available ? '#78716c' : '#a8a29e',
-                                                    fontWeight: '500',
-                                                }}>{item.available ? 'Add to order' : 'Unavailable'}</Text>
-                                            </View>
-                                            <Text style={{
-                                                fontSize: 18,
-                                                fontWeight: '800',
-                                                color: theme.primary,
-                                                fontVariant: ['tabular-nums'],
-                                            }}>
-                                                {item.price}{' '}
-                                                <Text style={{ fontSize: 11, color: '#a8a29e', fontWeight: '600' }}>ETB</Text>
-                                            </Text>
-                                        </View>
-
-                                        {renderAction ? (
-                                            renderAction(item)
-                                        ) : (
+                        {isExpanded && (
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+                                {categoryItems.map((item) => (
+                                    <Pressable
+                                        key={item.id}
+                                        onPress={() => item.available && onItemPress(item)}
+                                        style={({ pressed }) => ({
+                                            backgroundColor: '#ffffff',
+                                            borderRadius: 16,
+                                            padding: 0,
+                                            borderWidth: 1,
+                                            borderColor: item.available ? '#e7e5e4' : '#e7e5e4',
+                                            width: 280,
+                                            overflow: 'hidden',
+                                            opacity: item.available ? 1 : 0.6,
+                                            transform: [{ scale: pressed ? 0.98 : 1 }],
+                                            shadowColor: theme.primary,
+                                            shadowOffset: { width: 0, height: 4 },
+                                            shadowOpacity: item.available ? 0.08 : 0.04,
+                                            shadowRadius: 12,
+                                            elevation: 2,
+                                        })}
+                                    >
+                                        {/* Item Image */}
+                                        {item.image && (
                                             <View style={{
-                                                borderRadius: 10,
-                                                paddingVertical: 12,
-                                                paddingHorizontal: 14,
-                                                backgroundImage: item.available ? theme.btnGradient : 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: 6,
-                                                shadowColor: item.available ? theme.primary : 'transparent',
-                                                shadowOffset: { width: 0, height: 2 },
-                                                shadowOpacity: item.available ? 0.2 : 0,
-                                                shadowRadius: 6,
+                                                width: '100%',
+                                                height: 160,
+                                                backgroundColor: '#f5f5f4',
+                                                marginBottom: 16,
+                                                borderRadius: 12,
+                                                overflow: 'hidden'
                                             }}>
-                                                <Text style={{
-                                                    color: item.available ? '#ffffff' : '#a8a29e',
-                                                    fontWeight: '700',
-                                                    fontSize: 14,
-                                                }}>
-                                                    {item.available ? '+ Add to Cart' : 'Sold Out'}
-                                                </Text>
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover'
+                                                    }}
+                                                />
                                             </View>
                                         )}
-                                    </View>
-                                </Pressable>
-                            ))}
-                        </View>
+
+                                        <View style={{ padding: 20 }}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                                                <View style={{ flex: 1, marginRight: 12 }}>
+                                                    <Text style={{
+                                                        fontSize: 17,
+                                                        fontWeight: '700',
+                                                        color: '#1c1917',
+                                                        marginBottom: 4,
+                                                        letterSpacing: -0.2,
+                                                    }}>{item.name}</Text>
+                                                    <Text style={{
+                                                        fontSize: 12,
+                                                        color: item.available ? '#78716c' : '#a8a29e',
+                                                        fontWeight: '500',
+                                                    }}>{item.available ? 'Add to order' : 'Unavailable'}</Text>
+                                                </View>
+                                                <Text style={{
+                                                    fontSize: 18,
+                                                    fontWeight: '800',
+                                                    color: theme.primary,
+                                                    fontVariant: ['tabular-nums'],
+                                                }}>
+                                                    {item.price}{' '}
+                                                    <Text style={{ fontSize: 11, color: '#a8a29e', fontWeight: '600' }}>ETB</Text>
+                                                </Text>
+                                            </View>
+
+                                            {renderAction ? (
+                                                renderAction(item)
+                                            ) : (
+                                                <View style={{
+                                                    borderRadius: 10,
+                                                    paddingVertical: 12,
+                                                    paddingHorizontal: 14,
+                                                    backgroundImage: item.available ? theme.btnGradient : 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: 6,
+                                                    shadowColor: item.available ? theme.primary : 'transparent',
+                                                    shadowOffset: { width: 0, height: 2 },
+                                                    shadowOpacity: item.available ? 0.2 : 0,
+                                                    shadowRadius: 6,
+                                                }}>
+                                                    <Text style={{
+                                                        color: item.available ? '#ffffff' : '#a8a29e',
+                                                        fontWeight: '700',
+                                                        fontSize: 14,
+                                                    }}>
+                                                        {item.available ? '+ Add to Cart' : 'Sold Out'}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                    </Pressable>
+                                ))}
+                            </View>
+                        )}
                     </View>
                 );
             })}

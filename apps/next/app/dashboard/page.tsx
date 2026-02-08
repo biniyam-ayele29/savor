@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { TextLink } from 'solito/link';
 
 export default function DashboardPage() {
-    const { user, companyName, companyId, isLoading: authLoading } = useAuth();
+    const { user, companyName, companyId, role, isLoading: authLoading } = useAuth();
     const router = useRouter();
 
     const { data: employees = [] } = useEmployees(companyId || undefined);
@@ -15,6 +15,12 @@ export default function DashboardPage() {
 
     if (!authLoading && !user) {
         router.push('/');
+        return null;
+    }
+
+    // Redirect default users to /order
+    if (!authLoading && user && role !== 'admin' && role !== 'super_admin') {
+        router.push('/order');
         return null;
     }
 

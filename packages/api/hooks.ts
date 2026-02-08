@@ -85,10 +85,13 @@ export function useOrders() {
                 totalPrice: Number(order.total_price),
                 floorNumber: order.floor_number,
                 status: order.status as OrderStatus,
+                statusDescription: order.status_description,
                 createdAt: order.created_at,
                 companyId: order.company_id,
                 employeeId: order.employee_id,
-                employeeName: order.employee_name
+                employeeName: order.employee_name,
+                waiterName: order.waiter_name,
+                waiterPhone: order.waiter_phone,
             }));
         },
         refetchInterval: 5000 // Auto-refresh every 5 seconds for real-time feel

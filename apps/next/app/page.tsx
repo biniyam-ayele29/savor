@@ -7,14 +7,18 @@ import { useAuth } from '@my-app/api';
 import { useRouter } from 'next/navigation';
 
 export default function LandingPage() {
-    const { user, isLoading } = useAuth();
+    const { user, isLoading, role } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
         if (!isLoading && user) {
-            router.push('/dashboard');
+            if (role === 'admin' || role === 'super_admin') {
+                router.push('/dashboard');
+            } else {
+                router.push('/order');
+            }
         }
-    }, [user, isLoading, router]);
+    }, [user, role, isLoading, router]);
     return (
         <View style={{ flex: 1, backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 50%, #e7e5e4 100%)' }}>
             <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
@@ -41,7 +45,7 @@ export default function LandingPage() {
                             letterSpacing: -1,
                             marginBottom: 8
                         }}>
-                            Office Cafe
+                            Savor
                         </Text>
                         <Text style={{
                             fontSize: 18,

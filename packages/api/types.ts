@@ -24,10 +24,14 @@ export interface Order {
     totalPrice: number;
     floorNumber: number;
     status: OrderStatus;
+    statusDescription?: string;
     createdAt: string; // ISO string
     companyId?: string;
     employeeId?: string;
     employeeName?: string;
+    waiterName?: string;
+    waiterPhone?: string;
+    waiterAvatarUrl?: string;
 }
 
 export interface Company {

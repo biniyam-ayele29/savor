@@ -46,7 +46,7 @@ export function LoginForm() {
                     textTransform: 'uppercase',
                     letterSpacing: 1.2
                 }}>
-                    Admin Email
+                    Email
                 </Text>
                 <TextInput
                     style={{

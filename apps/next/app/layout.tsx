@@ -4,7 +4,7 @@ import { NavBar } from './navbar'
 import './globals.css'
 
 export const metadata = {
-  title: 'Office Cafe - Order from your desk',
+  title: 'Savor - Order from your desk',
   description: 'Fresh coffee & snacks delivered to your office',
 }
 

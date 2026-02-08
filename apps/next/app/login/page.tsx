@@ -100,7 +100,7 @@ export default function LoginPage() {
             {/* Footer */}
             <View style={{ marginTop: 32 }}>
                 <Text style={{ color: '#a8a29e', fontSize: 13, textAlign: 'center' }}>
-                    Office Cafe Management System
+                    Savor Management System
                 </Text>
             </View>
         </View>

@@ -22,11 +22,22 @@ import {
 } from 'lucide-react';
 
 const STATUS_COLORS = {
-    pending: { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa', label: 'Pending' },
-    preparing: { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe', label: 'Preparing' },
-    delivering: { bg: '#faf5ff', text: '#7c3aed', border: '#e9d5ff', label: 'Delivering' },
-    delivered: { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0', label: 'Delivered' },
-    unknown: { bg: '#f5f5f4', text: '#57534e', border: '#e7e5e4', label: 'Unknown' }
+    pending: { bg: '#FFF7ED', text: '#9A3412', border: '#FFEDD5', label: 'Pending' },
+    preparing: { bg: '#EFF6FF', text: '#1E40AF', border: '#DBEAFE', label: 'Preparing' },
+    delivering: { bg: '#F5F3FF', text: '#5B21B6', border: '#EDE9FE', label: 'Delivering' },
+    delivered: { bg: '#ECFDF5', text: '#065F46', border: '#D1FAE5', label: 'Delivered' },
+    unknown: { bg: '#F5F5F4', text: '#44403C', border: '#E7E5E4', label: 'Unknown' }
+};
+
+const THEME = {
+    primary: '#B45309',
+    secondary: '#D97706',
+    surface: '#FFFFFF',
+    background: '#FAFAF9',
+    text: '#1C1917',
+    textMuted: '#78716C',
+    border: '#E7E5E4',
+    accent: '#FEF3C7'
 };
 
 const getStatusConfig = (status: string) => {
@@ -41,6 +52,10 @@ const getStatusConfig = (status: string) => {
     }
 
     // Mappings for non-standard statuses
+    if (normalized.includes('ready') || normalized.includes('pickup')) {
+        return { ...STATUS_COLORS.delivering, label: 'Ready for Pick Up' };
+    }
+
     if (normalized.includes('being prepared') || normalized.includes('cooking')) {
         return { ...STATUS_COLORS.preparing, label: status }; // Keep original label but use preparing colors
     }
@@ -57,21 +72,92 @@ const getStatusConfig = (status: string) => {
     return { ...STATUS_COLORS.unknown, label: status };
 };
 
+const CircularStatusIndicator = ({ status, size = 32 }: { status: string; size?: number }) => {
+    const config = getStatusConfig(status);
+    const normalized = status.toLowerCase().trim();
+
+    // Map status to progress percentage
+    let progress = 0.1;
+    if (normalized === 'pending') progress = 0.25;
+    else if (normalized.includes('prepare') || normalized.includes('cook')) progress = 0.5;
+    else if (normalized.includes('ready') || normalized.includes('pickup')) progress = 0.75;
+    else if (normalized.includes('deliver') || normalized.includes('way')) progress = 0.85;
+    else if (normalized.includes('done') || normalized.includes('complete') || normalized === 'delivered') progress = 1;
+
+    const strokeWidth = 3;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - progress * circumference;
+
+    return (
+        <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+            {/* SVG Circle for progress */}
+            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
+                {/* Background Circle */}
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke={THEME.border}
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                />
+                {/* Progress Circle */}
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke={config.text}
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
+                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                />
+            </svg>
+            <View style={{ position: 'absolute' }}>
+                {normalized === 'pending' && <Clock size={size * 0.5} color={config.text} />}
+                {(normalized.includes('prepare') || normalized.includes('cook')) && <Activity size={size * 0.5} color={config.text} />}
+                {(normalized.includes('ready') || normalized.includes('pickup')) && <MapPin size={size * 0.5} color={config.text} />}
+                {(normalized.includes('deliver') || normalized.includes('way')) && <MapPin size={size * 0.5} color={config.text} />}
+                {(normalized.includes('done') || normalized.includes('complete') || normalized === 'delivered') && <CheckCircle2 size={size * 0.5} color={config.text} />}
+            </View>
+        </View>
+    );
+};
+
 export default function OrderPage() {
-    const { companyId, companyName, user, isLoading: authLoading } = useAuth();
+    const cleanDescription = (desc: string) => {
+        if (!desc) return '';
+        return desc.replace('driver pickup', 'pick up').replace('driver ', '');
+    };
+    const {
+        companyId,
+        companyName,
+        companyFloor,
+        companyEmail: companyEmailFromAuth,
+        companyPhone: companyPhoneFromAuth,
+        companyLogoUrl,
+        user,
+        isLoading: authLoading
+    } = useAuth();
     const { data: menu = [], isLoading: menuLoading } = useMenuItems();
     const { data: companies = [], isLoading: companiesLoading } = useCompanies();
     const { data: orders = [], isLoading: ordersLoading } = useOrders();
     const createOrder = useCreateOrder();
 
     const [cart, setCart] = useState<OrderItem[]>([]);
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const [selectedCompanyId, setSelectedCompanyId] = useState(companyId || '');
-    const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
     const [orderPlaced, setOrderPlaced] = useState(false);
 
     // Quantity selector modal state
     const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
     const [itemQuantity, setItemQuantity] = useState(1);
+
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
     useEffect(() => {
         if (companyId) {
@@ -79,98 +165,14 @@ export default function OrderPage() {
         }
     }, [companyId]);
 
-    const { data: employees = [], isLoading: employeesLoading } = useEmployees(selectedCompanyId);
+    // We use data directly from useAuth context
 
-    const [userCompanyDetails, setUserCompanyDetails] = useState<any>(null);
-    const [companyLoading, setCompanyLoading] = useState(true);
+    // Cleanup the redundant fetching logic that caused the console error
 
-    // Get company from employees (if employees load, we can get company_id from them)
-    useEffect(() => {
-        const fetchUserCompany = async () => {
-            console.log('=== FETCHING COMPANY ===');
-            console.log('Employees:', employees);
-            console.log('Employees loading:', employeesLoading);
-            console.log('Auth companyId:', companyId);
-            console.log('User:', user?.id);
-
-            let targetCompanyId: string | null = null;
-
-            // Strategy 1: Get company_id from loaded employees
-            if (employees.length > 0) {
-                targetCompanyId = employees[0].companyId;
-                console.log('✓ Got company_id from employees:', targetCompanyId);
-            }
-
-            // Strategy 2: Use companyId from auth context
-            if (!targetCompanyId && companyId) {
-                targetCompanyId = companyId;
-                console.log('✓ Using companyId from auth:', targetCompanyId);
-            }
-
-            // Strategy 3: Query company_admins directly
-            if (!targetCompanyId && user) {
-                try {
-                    const { data: adminData, error: adminError } = await supabase
-                        .from('company_admins')
-                        .select('company_id')
-                        .eq('user_id', user.id)
-                        .maybeSingle();
-
-                    console.log('company_admins query:', { adminData, adminError });
-
-                    if (adminData?.company_id) {
-                        targetCompanyId = adminData.company_id;
-                        console.log('✓ Got company_id from company_admins:', targetCompanyId);
-                    }
-                } catch (err) {
-                    console.error('Error querying company_admins:', err);
-                }
-            }
-
-            // Fetch company details
-            if (targetCompanyId) {
-                try {
-                    console.log('Fetching company details for:', targetCompanyId);
-                    const { data: companyData, error: companyError } = await supabase
-                        .from('companies')
-                        .select('*')
-                        .eq('id', targetCompanyId)
-                        .single();
-
-                    console.log('Company query result:', { companyData, companyError });
-
-                    if (companyData && !companyError) {
-                        console.log('✓ Successfully loaded company:', companyData.name);
-                        setUserCompanyDetails(companyData);
-                        setSelectedCompanyId(targetCompanyId);
-                    } else {
-                        console.error('Failed to load company. Error details:', {
-                            message: companyError?.message,
-                            details: companyError?.details,
-                            hint: companyError?.hint,
-                            code: companyError?.code
-                        });
-                    }
-                } catch (err) {
-                    console.error('Error fetching company details:', err);
-                }
-            } else {
-                console.error('✗ No company_id found from any strategy');
-            }
-
-            setCompanyLoading(false);
-        };
-
-        // Only run when employees finish loading
-        if (!employeesLoading) {
-            fetchUserCompany();
-        }
-    }, [employees, employeesLoading, companyId, user]);
-
-    // Company details from database (snake_case from Supabase)
-    const floor = userCompanyDetails?.floor_number?.toString() || '';
-    const companyEmail = userCompanyDetails?.contact_email || '';
-    const companyPhone = userCompanyDetails?.contact_phone || '';
+    // Use centralized details from useAuth context
+    const floor = companyFloor || '';
+    const companyEmail = companyEmailFromAuth || '';
+    const companyPhone = companyPhoneFromAuth || '';
 
     // Open quantity modal when clicking an item
     const handleItemClick = (item: any) => {
@@ -220,15 +222,15 @@ export default function OrderPage() {
 
     const placeOrder = async () => {
         // Use multiple fallbacks for companyId
-        const orderCompanyId = selectedCompanyId || userCompanyDetails?.id || companyId || (employees.length > 0 ? employees[0].companyId : null);
+        const orderCompanyId = selectedCompanyId || companyId;
 
-        if (!orderCompanyId || !selectedEmployeeId) {
-            alert('Please select a recipient');
+        if (!orderCompanyId || !user?.id) {
+            alert('Missing order credentials. Please try logging in again.');
             return;
         }
 
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const orderFloor = userCompanyDetails?.floor_number || 1;
+        const orderFloor = companyFloor || '1';
 
         try {
             await createOrder.mutateAsync({
@@ -236,12 +238,13 @@ export default function OrderPage() {
                 totalPrice: total,
                 floorNumber: Number(orderFloor),
                 companyId: orderCompanyId,
-                employeeId: selectedEmployeeId,
+                employeeId: user.id,
                 status: 'pending'
             });
 
             setOrderPlaced(true);
             setCart([]);
+            setShowConfirmation(false);
             setTimeout(() => setOrderPlaced(false), 3000);
         } catch (error) {
             console.error('Error placing order:', error);
@@ -249,8 +252,24 @@ export default function OrderPage() {
         }
     };
 
-    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const activeOrders = orders;
+    const [view, setView] = useState<'live' | 'history'>('live');
+
+    // Robust status grouping helpers
+    const isActiveStatus = (status: string) => {
+        if (!status) return true; // Treat unknown/new as active
+        const s = status.toLowerCase();
+        return !s.includes('delivered') && !s.includes('cancelled') && !s.includes('done') && !s.includes('complete');
+    };
+
+    const isHistoryStatus = (status: string) => {
+        if (!status) return false;
+        const s = status.toLowerCase();
+        return s.includes('delivered') || s.includes('cancelled') || s.includes('done') || s.includes('complete');
+    };
+
+    const activeOrders = orders.filter((o: any) => isActiveStatus(o.status));
+    const historyOrders = orders.filter((o: any) => isHistoryStatus(o.status));
+    const displayOrders = view === 'live' ? activeOrders : historyOrders;
 
     // Helper: total item count from order_items (sum of quantities)
     const getTotalItemCount = (order: any) =>
@@ -292,184 +311,429 @@ export default function OrderPage() {
         );
     }
 
-    const displayHeaderLabel = companyName ? `@${companyName.replace(/\s+/g, '')}` : 'Office Cafe';
+    const displayHeaderLabel = companyName ? `@${companyName.replace(/\s+/g, '')}` : 'Savor';
 
     return (
         <View style={{
             flex: 1,
-            backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 50%, #e7e5e4 100%)',
-            minHeight: '100vh',
+            backgroundColor: THEME.background,
+            height: '100vh',
             overflow: 'hidden'
         }}>
-            {/* Header */}
+            {/* Header - Premium Gradient */}
             <View style={{
-                paddingHorizontal: 28,
-                paddingVertical: 18,
+                paddingHorizontal: 32,
+                paddingVertical: 20,
                 borderBottomWidth: 1,
-                borderBottomColor: '#e7e5e4',
-                backgroundImage: 'linear-gradient(180deg, #ffffff 0%, #fafaf9 100%)',
+                borderBottomColor: THEME.border,
+                backgroundColor: THEME.surface,
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.04,
-                shadowRadius: 3,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.03,
+                shadowRadius: 10,
+                zIndex: 10
             }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-                    <Text style={{
-                        fontSize: 24,
-                        fontWeight: '800',
-                        color: '#1c1917',
-                        letterSpacing: -0.5,
-                    }}>
-                        {displayHeaderLabel}{' '}
-                        <Text style={{ color: '#b45309', fontWeight: '800' }}>Cafe</Text>
-                        <View style={{ marginLeft: 8 }}>
-                            <Coffee size={26} color="#b45309" strokeWidth={2.5} />
-                        </View>
-                    </Text>
-                    <View style={{ height: 20, width: 1, backgroundColor: '#e7e5e4', borderRadius: 1 }} />
-                    <Text style={{ color: '#78716c', fontSize: 13, fontWeight: '500' }}>Order Dashboard</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
+                    <Text style={{ color: THEME.textMuted, fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>Live Kitchen</Text>
                 </View>
 
-                {orderPlaced && (
-                    <View style={{
-                        backgroundImage: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                        paddingHorizontal: 18,
-                        paddingVertical: 10,
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: '#a7f3d0',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 8,
-                        shadowColor: '#059669',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.15,
-                        shadowRadius: 8,
-                    }}>
-                        <CheckCircle2 size={18} color="#047857" strokeWidth={3} />
-                        <Text style={{ color: '#047857', fontWeight: '700', fontSize: 14 }}>Order Received!</Text>
-                    </View>
-                )}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                    {orderPlaced && (
+                        <View style={{
+                            backgroundColor: '#D1FAE5',
+                            paddingHorizontal: 16,
+                            paddingVertical: 8,
+                            borderRadius: 100,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8,
+                            borderWidth: 1,
+                            borderColor: '#A7F3D0',
+                        }}>
+                            <CheckCircle2 size={16} color="#065F46" strokeWidth={3} />
+                            <Text style={{ color: '#065F46', fontWeight: '800', fontSize: 13 }}>Order Confirmed</Text>
+                        </View>
+                    )}
+                </View>
             </View>
 
             {/* Main Content */}
-            <View style={{ flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
+            <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flex: 1,
+                overflow: 'hidden',
+                minHeight: 0
+            }}>
 
                 {/* Activity Feed */}
-                <View style={{
-                    flex: 1,
-                    backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 100%)',
-                    borderRightWidth: 1,
-                    borderRightColor: '#e7e5e4',
-                    maxWidth: 320,
+                <div style={{
+                    flex: '1',
+                    backgroundColor: '#F5F5F4',
+                    borderRight: '1px solid ' + THEME.border,
+                    maxWidth: '340px',
+                    height: '100%',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}>
                     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 24 }} showsVerticalScrollIndicator={false}>
-                        <Text style={{
-                            fontSize: 11,
-                            fontWeight: '700',
-                            color: '#78716c',
-                            textTransform: 'uppercase',
-                            letterSpacing: 1.2,
-                            marginBottom: 20,
-                        }}>Live Activity</Text>
-
-                        {activeOrders.length === 0 ? (
-                            <View style={{
-                                padding: 36,
-                                backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
-                                borderRadius: 16,
-                                borderWidth: 1,
-                                borderColor: '#e7e5e4',
-                                borderStyle: 'dashed',
-                                alignItems: 'center',
-                            }}>
-                                <View style={{
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: 24,
-                                    backgroundImage: 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',
+                        {/* Segmented Control Toggle */}
+                        <View style={{
+                            flexDirection: 'row',
+                            backgroundColor: THEME.surface,
+                            borderRadius: 12,
+                            padding: 6,
+                            marginBottom: 28,
+                            borderWidth: 1,
+                            borderColor: THEME.border,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 1 },
+                            shadowOpacity: 0.05,
+                            shadowRadius: 4,
+                        }}>
+                            <Pressable
+                                onPress={() => setView('live')}
+                                style={({ pressed }: any) => ({
+                                    flex: 1,
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 8,
+                                    backgroundColor: view === 'live' ? THEME.text : 'transparent',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginBottom: 16,
-                                }}>
-                                    <Activity size={24} color="#b45309" />
+                                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                                })}
+                            >
+                                <Text style={{
+                                    fontSize: 13,
+                                    fontWeight: '800',
+                                    color: view === 'live' ? '#FFFFFF' : THEME.textMuted,
+                                    letterSpacing: 0.3
+                                }}>Live</Text>
+                            </Pressable>
+                            <Pressable
+                                onPress={() => setView('history')}
+                                style={({ pressed }: any) => ({
+                                    flex: 1,
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 8,
+                                    backgroundColor: view === 'history' ? THEME.text : 'transparent',
+                                    alignItems: 'center',
+                                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                                })}
+                            >
+                                <Text style={{
+                                    fontSize: 13,
+                                    fontWeight: '800',
+                                    color: view === 'history' ? '#FFFFFF' : THEME.textMuted,
+                                    letterSpacing: 0.3
+                                }}>History</Text>
+                            </Pressable>
+                        </View>
+
+                        {/* Activity Content */}
+                        {view === 'live' ? (
+                            <View>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                                    <Activity size={18} color={THEME.primary} />
+                                    <Text style={{ fontSize: 15, fontWeight: '800', color: THEME.text }}>Live Activity</Text>
                                 </View>
-                                <Text style={{ color: '#a8a29e', fontSize: 14, fontWeight: '500', textAlign: 'center' }}>
-                                    No recent activity to track.
-                                </Text>
-                                <Text style={{ color: '#d6d3d1', fontSize: 12, marginTop: 4 }}>Orders will appear here</Text>
+                                {activeOrders.length === 0 ? (
+                                    <View style={{
+                                        alignItems: 'center',
+                                        backgroundColor: THEME.surface,
+                                        borderRadius: 16,
+                                        padding: 32,
+                                        borderWidth: 1,
+                                        borderColor: THEME.border,
+                                        borderStyle: 'dashed',
+                                    }}>
+                                        <View style={{
+                                            width: 56,
+                                            height: 56,
+                                            borderRadius: 28,
+                                            backgroundColor: THEME.accent,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginBottom: 14,
+                                        }}>
+                                            <Coffee size={26} color={THEME.primary} />
+                                        </View>
+                                        <Text style={{ color: THEME.text, fontSize: 14, fontWeight: '700', textAlign: 'center' }}>All Quiet</Text>
+                                        <Text style={{ color: THEME.textMuted, fontSize: 12, marginTop: 6, textAlign: 'center' }}>No active orders at the moment</Text>
+                                    </View>
+                                ) : (
+                                    <View style={{ gap: 14 }}>
+                                        {activeOrders.map((order: any) => (
+                                            <Pressable
+                                                key={order.id}
+                                                onPress={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                                                style={({ pressed }: any) => ({
+                                                    backgroundColor: THEME.surface,
+                                                    borderRadius: 14,
+                                                    padding: 16,
+                                                    borderWidth: 1,
+                                                    borderColor: expandedOrderId === order.id ? THEME.primary : THEME.border,
+                                                    opacity: pressed ? 0.9 : 1,
+                                                    shadowColor: '#000',
+                                                    shadowOffset: { width: 0, height: 2 },
+                                                    shadowOpacity: expandedOrderId === order.id ? 0.08 : 0.03,
+                                                    shadowRadius: 8,
+                                                })}
+                                            >
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                                                    <CircularStatusIndicator status={order.status} size={36} />
+                                                    <View style={{ flex: 1 }}>
+                                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <Text style={{ fontSize: 13, fontWeight: '800', color: THEME.text }}>
+                                                                Order #{order.id.slice(0, 8).toUpperCase()}
+                                                            </Text>
+                                                            <Text style={{ fontSize: 13, fontWeight: '900', color: THEME.primary }}>
+                                                                ETB {order.totalPrice}
+                                                            </Text>
+                                                        </View>
+                                                        <Text style={{ fontSize: 11, fontWeight: '700', color: THEME.textMuted, marginTop: 2, textTransform: 'capitalize' }}>
+                                                            {order.status} • {getTotalItemCount(order)} Item{getTotalItemCount(order) > 1 ? 's' : ''}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+
+                                                {expandedOrderId === order.id && (
+                                                    <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#f5f5f4' }}>
+                                                        {/* Status Description */}
+                                                        {order.statusDescription && (
+                                                            <View style={{ backgroundColor: THEME.accent, padding: 10, borderRadius: 10, marginBottom: 16 }}>
+                                                                <Text style={{ fontSize: 12, color: THEME.text, fontWeight: '700', textAlign: 'center' }}>
+                                                                    "{cleanDescription(order.statusDescription)}"
+                                                                </Text>
+                                                            </View>
+                                                        )}
+
+                                                        {/* Item Breakdown */}
+                                                        <View style={{ marginBottom: 16 }}>
+                                                            <Text style={{ fontSize: 11, fontWeight: '800', color: THEME.textMuted, textTransform: 'uppercase', marginBottom: 8, letterSpacing: 0.5 }}>
+                                                                Items Ordered
+                                                            </Text>
+                                                            {(order.items || []).map((item: any, idx: number) => (
+                                                                <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                                                                    <Text style={{ fontSize: 13, color: THEME.text, fontWeight: '600' }}>
+                                                                        <Text style={{ color: THEME.primary }}>{item.quantity}x</Text> {item.name}
+                                                                    </Text>
+                                                                    <Text style={{ fontSize: 13, color: THEME.textMuted, fontVariant: ['tabular-nums'] }}>
+                                                                        ETB {item.price * item.quantity}
+                                                                    </Text>
+                                                                </View>
+                                                            ))}
+                                                        </View>
+
+                                                        {/* Waiter info if available */}
+                                                        {order.waiterName && (
+                                                            <View style={{ gap: 10, backgroundColor: '#fafaf9', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#f5f5f4' }}>
+                                                                <Text style={{ fontSize: 11, fontWeight: '800', color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                                                    Assigned Waiting Staff
+                                                                </Text>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                                                        {order.waiterAvatarUrl ? (
+                                                                            <img
+                                                                                src={order.waiterAvatarUrl}
+                                                                                style={{ width: 36, height: 36, borderRadius: 18, objectFit: 'cover', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                                                                            />
+                                                                        ) : (
+                                                                            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: THEME.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                                                                                <Text style={{ fontSize: 14, fontWeight: '800', color: THEME.primary }}>{order.waiterName[0].toUpperCase()}</Text>
+                                                                            </View>
+                                                                        )}
+                                                                        <View>
+                                                                            <Text style={{ fontSize: 14, fontWeight: '700', color: THEME.text }}>{order.waiterName}</Text>
+                                                                            <Text style={{ fontSize: 11, color: THEME.textMuted }}>Savor Specialist</Text>
+                                                                        </View>
+                                                                    </View>
+                                                                    {order.waiterPhone && (
+                                                                        <Pressable
+                                                                            onPress={() => window.location.href = `tel:${order.waiterPhone}`}
+                                                                            style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                                                                        >
+                                                                            <Phone size={14} color={THEME.primary} />
+                                                                            <Text style={{ fontSize: 13, fontWeight: '700', color: THEME.primary, textDecorationLine: 'underline' }}>{order.waiterPhone}</Text>
+                                                                        </Pressable>
+                                                                    )}
+                                                                </View>
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                )}
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                )}
                             </View>
                         ) : (
-                            <View style={{ gap: 12 }}>
-                                {activeOrders.map((order: any) => {
-                                    const statusConfig = getStatusConfig(order.status);
-                                    return (
-                                        <View
-                                            key={order.id}
-                                            style={{
-                                                backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
-                                                padding: 18,
-                                                borderRadius: 14,
-                                                borderWidth: 1,
-                                                borderColor: '#e7e5e4',
-                                                shadowColor: '#000',
-                                                shadowOffset: { width: 0, height: 2 },
-                                                shadowOpacity: 0.04,
-                                                shadowRadius: 8,
-                                                elevation: 2,
-                                            }}
-                                        >
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center' }}>
-                                                <View style={{
-                                                    backgroundImage: `linear-gradient(135deg, ${statusConfig.bg} 0%, ${statusConfig.border} 100%)`,
-                                                    paddingHorizontal: 10,
-                                                    paddingVertical: 4,
-                                                    borderRadius: 8,
-                                                    borderWidth: 1,
-                                                    borderColor: statusConfig.border,
-                                                }}>
-                                                    <Text style={{ color: statusConfig.text, fontSize: 11, fontWeight: '700' }}>{statusConfig.label}</Text>
-                                                </View>
-                                                <Text style={{ fontSize: 11, color: '#a8a29e', fontWeight: '600', fontVariant: ['tabular-nums'] }}>#{order.id.slice(0, 8)}</Text>
-                                            </View>
-                                            <Text style={{ fontWeight: '700', color: '#1c1917', fontSize: 15 }}>{order.employeeName || 'Guest'}</Text>
-                                            <Text style={{ color: '#78716c', fontSize: 13, marginTop: 4 }}>{getTotalItemCount(order)} items · ETB {order.totalPrice ?? 0}</Text>
+                            <View>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                                    <Receipt size={18} color={THEME.primary} />
+                                    <Text style={{ fontSize: 15, fontWeight: '800', color: THEME.text }}>History</Text>
+                                </View>
+                                {historyOrders.length === 0 ? (
+                                    <View style={{
+                                        alignItems: 'center',
+                                        backgroundColor: THEME.surface,
+                                        borderRadius: 16,
+                                        padding: 32,
+                                        borderWidth: 1,
+                                        borderColor: THEME.border,
+                                        borderStyle: 'dashed',
+                                    }}>
+                                        <View style={{
+                                            width: 56,
+                                            height: 56,
+                                            borderRadius: 28,
+                                            backgroundColor: THEME.accent,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginBottom: 14,
+                                        }}>
+                                            <CheckCircle2 size={26} color={THEME.primary} />
                                         </View>
-                                    );
-                                })}
+                                        <Text style={{ color: THEME.text, fontSize: 14, fontWeight: '700', textAlign: 'center' }}>No History</Text>
+                                        <Text style={{ color: THEME.textMuted, fontSize: 12, marginTop: 6, textAlign: 'center' }}>Completed orders will appear here</Text>
+                                    </View>
+                                ) : (
+                                    <View style={{ gap: 14 }}>
+                                        {historyOrders.map((order: any) => (
+                                            <Pressable
+                                                key={order.id}
+                                                onPress={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                                                style={({ pressed }: any) => ({
+                                                    backgroundColor: THEME.surface,
+                                                    borderRadius: 14,
+                                                    padding: 16,
+                                                    borderWidth: 1,
+                                                    borderColor: expandedOrderId === order.id ? THEME.primary : THEME.border,
+                                                    opacity: pressed ? 0.9 : 0.8,
+                                                })}
+                                            >
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                                                    <CircularStatusIndicator status={order.status} size={36} />
+                                                    <View style={{ flex: 1 }}>
+                                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <Text style={{ fontSize: 13, fontWeight: '800', color: THEME.text }}>
+                                                                Order #{order.id.slice(0, 8).toUpperCase()}
+                                                            </Text>
+                                                            <CheckCircle2 size={16} color="#15803d" />
+                                                        </View>
+                                                        <Text style={{ fontSize: 11, fontWeight: '700', color: THEME.textMuted, marginTop: 2, textTransform: 'capitalize' }}>
+                                                            {order.status} • {getTotalItemCount(order)} Item{getTotalItemCount(order) > 1 ? 's' : ''}
+                                                        </Text>
+                                                    </View>
+                                                </View>
 
+                                                {expandedOrderId === order.id && (
+                                                    <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#f5f5f4' }}>
+                                                        {order.statusDescription && (
+                                                            <View style={{ backgroundColor: THEME.accent, padding: 10, borderRadius: 10, marginBottom: 12 }}>
+                                                                <Text style={{ fontSize: 12, color: THEME.text, fontWeight: '700', textAlign: 'center' }}>
+                                                                    "{cleanDescription(order.statusDescription)}"
+                                                                </Text>
+                                                            </View>
+                                                        )}
+                                                        <View style={{ marginBottom: 16 }}>
+                                                            {(order.items || []).map((item: any, idx: number) => (
+                                                                <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                                                                    <Text style={{ fontSize: 13, color: THEME.text }}>
+                                                                        {item.quantity}x {item.name}
+                                                                    </Text>
+                                                                    <Text style={{ fontSize: 13, color: THEME.textMuted }}>
+                                                                        ETB {item.price * item.quantity}
+                                                                    </Text>
+                                                                </View>
+                                                            ))}
+                                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#f5f5f4', paddingTop: 12, marginTop: 8 }}>
+                                                                <Text style={{ fontSize: 13, fontWeight: '800', color: THEME.text }}>Total</Text>
+                                                                <Text style={{ fontSize: 13, fontWeight: '800', color: THEME.primary }}>ETB {order.totalPrice}</Text>
+                                                            </View>
+                                                        </View>
+
+                                                        {/* Waiter info if available */}
+                                                        {order.waiterName && (
+                                                            <View style={{ gap: 10, backgroundColor: '#fafaf9', padding: 12, borderRadius: 12, borderTopWidth: 1, borderTopColor: '#f5f5f4' }}>
+                                                                <Text style={{ fontSize: 11, fontWeight: '800', color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                                                    Handled By
+                                                                </Text>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                                                    {order.waiterAvatarUrl ? (
+                                                                        <img
+                                                                            src={order.waiterAvatarUrl}
+                                                                            style={{ width: 32, height: 32, borderRadius: 16, objectFit: 'cover', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                                                                        />
+                                                                    ) : (
+                                                                        <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: THEME.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'white' }}>
+                                                                            <Text style={{ fontSize: 12, fontWeight: '800', color: THEME.primary }}>{order.waiterName[0].toUpperCase()}</Text>
+                                                                        </View>
+                                                                    )}
+                                                                    <View>
+                                                                        <Text style={{ fontSize: 13, fontWeight: '700', color: THEME.text }}>{order.waiterName}</Text>
+                                                                        {order.waiterPhone ? (
+                                                                            <Pressable onPress={() => window.location.href = `tel:${order.waiterPhone}`}>
+                                                                                <Text style={{ fontSize: 11, color: THEME.primary, textDecorationLine: 'underline' }}>{order.waiterPhone}</Text>
+                                                                            </Pressable>
+                                                                        ) : (
+                                                                            <Text style={{ fontSize: 11, color: THEME.textMuted }}>Savor Specialist</Text>
+                                                                        )}
+                                                                    </View>
+                                                                </View>
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                )}
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                )}
                             </View>
                         )}
                     </ScrollView>
-                </View>
+                </div>
 
-                {/* Menu */}
-                <View style={{
-                    flex: 1.8,
-                    borderRightWidth: 1,
-                    borderRightColor: '#e7e5e4',
-                    backgroundColor: '#ffffff',
+                {/* Menu Section - Independent Scroll */}
+                <div style={{
+                    flex: '1.8',
+                    borderRight: '1px solid ' + THEME.border,
+                    backgroundColor: THEME.surface,
+                    height: '100%',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}>
                     <View style={{
                         padding: 28,
                         borderBottomWidth: 1,
                         borderBottomColor: '#f5f5f4',
-                        backgroundImage: 'linear-gradient(180deg, #ffffff 0%, #fafaf9 100%)',
+                        backgroundColor: '#ffffff',
                     }}>
-                        <Text style={{ fontSize: 22, fontWeight: '800', color: '#1c1917', letterSpacing: -0.3 }}>Menu</Text>
-                        <Text style={{ fontSize: 14, color: '#78716c', marginTop: 6 }}>Tap items to add to your order</Text>
+                        <Text style={{ fontSize: 22, fontWeight: '800', color: '#1c1917', letterSpacing: -0.3 }}>Menu Selection</Text>
+                        <Text style={{ fontSize: 14, color: '#78716c', marginTop: 6 }}>Explore our categories and add items to your ticket</Text>
                     </View>
-                    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
+                    <div style={{
+                        height: 'calc(100vh - 200px)',
+                        maxHeight: 'calc(100vh - 200px)',
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        padding: '32px',
+                        WebkitOverflowScrolling: 'touch'
+                    }}>
                         {menu.length === 0 ? (
                             <View style={{ padding: 56, alignItems: 'center' }}>
                                 <View style={{
                                     width: 80,
                                     height: 80,
                                     borderRadius: 40,
-                                    backgroundImage: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                                    backgroundColor: '#fff7ed',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     marginBottom: 20,
@@ -484,331 +748,353 @@ export default function OrderPage() {
                         ) : (
                             <MenuList items={menu} onItemPress={handleItemClick} />
                         )}
-                    </ScrollView>
-                </View>
+                    </div>
+                </div>
 
-                {/* Order Ticket / Place Order */}
+                {/* Order Ticket Sidebar - Sticky Right */}
                 <View style={{
-                    flex: 1,
-                    backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 100%)',
-                    padding: 28,
-                    justifyContent: 'center',
-                    minWidth: 360,
+                    flex: 1.2,
+                    backgroundColor: THEME.background,
+                    padding: 32,
+                    alignItems: 'center',
+                    minWidth: 420,
+                    zIndex: 20,
+                    borderLeftWidth: 1,
+                    borderLeftColor: THEME.border,
+                    height: '100%',
+                    overflow: 'hidden'
                 }}>
                     <View style={{
-                        backgroundColor: '#ffffff',
-                        borderRadius: 20,
+                        width: '100%',
+                        maxWidth: 400,
+                        backgroundColor: THEME.surface,
+                        borderRadius: 24,
                         borderWidth: 1,
-                        borderColor: '#e7e5e4',
+                        borderColor: THEME.border,
                         overflow: 'hidden',
-                        shadowColor: '#b45309',
-                        shadowOffset: { width: 0, height: 8 },
-                        shadowOpacity: 0.08,
-                        shadowRadius: 24,
-                        elevation: 8,
+                        shadowColor: THEME.primary,
+                        shadowOffset: { width: 0, height: 12 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 40,
+                        elevation: 12,
+                        maxHeight: '100%', // Ensure it doesn't exceed its parent
                     }}>
-                        {/* Ticket Header */}
+                        {/* Receipt Header */}
                         <View style={{
-                            backgroundImage: 'linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)',
-                            padding: 24,
-                            paddingBottom: 20,
+                            backgroundColor: THEME.text,
+                            padding: 28,
+                            paddingBottom: 24,
+                            position: 'relative'
                         }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                                <View style={{
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: 10,
-                                    backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                    <Receipt size={20} color="#ffffff" />
+                            <View style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: 4,
+                                backgroundColor: THEME.primary
+                            }} />
+
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                                    <View style={{
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: 12,
+                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        borderWidth: 1,
+                                        borderColor: 'rgba(255,255,255,0.1)'
+                                    }}>
+                                        <Receipt size={22} color="#FFFFFF" strokeWidth={2.5} />
+                                    </View>
+                                    <View>
+                                        <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: -0.5 }}>Order Ticket</Text>
+                                        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>Checkout</Text>
+                                    </View>
                                 </View>
-                                <View>
-                                    <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '800', letterSpacing: -0.3 }}>Your Order</Text>
-                                    <Text style={{ color: '#a8a29e', fontSize: 12, marginTop: 2 }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</Text>
+                                <View style={{ alignItems: 'flex-end' }}>
+                                    <Text style={{ color: THEME.primary, fontSize: 11, fontWeight: '900', textTransform: 'uppercase' }}>Token</Text>
+                                    <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '800', fontVariant: ['tabular-nums'] }}>#TK-29</Text>
                                 </View>
                             </View>
                         </View>
 
-                        <View style={{ padding: 24 }}>
-                            {/* Delivery Info - Exact company details from database */}
+                        {/* Order Details - Scrollable if too long */}
+                        <ScrollView
+                            style={{ flexShrink: 1 }}
+                            contentContainerStyle={{ padding: 28 }}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {/* Destination Display */}
                             <View style={{ marginBottom: 24 }}>
-                                <Text style={{
-                                    fontSize: 11,
-                                    fontWeight: '700',
-                                    color: '#78716c',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: 1,
-                                    marginBottom: 10,
-                                }}>Delivery Point</Text>
+                                <Text style={{ fontSize: 12, fontWeight: '800', color: THEME.textMuted, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Delivery Destination</Text>
                                 <View style={{
-                                    backgroundColor: '#fafaf9',
-                                    padding: 16,
-                                    borderRadius: 12,
+                                    padding: 18,
+                                    backgroundColor: THEME.background,
+                                    borderRadius: 16,
                                     borderWidth: 1,
-                                    borderColor: userCompanyDetails ? '#d1d5db' : '#e7e5e4',
+                                    borderColor: THEME.border,
                                 }}>
-                                    {companyLoading ? (
+                                    {authLoading ? (
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                            <ActivityIndicator size="small" color="#b45309" />
-                                            <Text style={{ color: '#78716c', fontSize: 14 }}>Loading company...</Text>
+                                            <ActivityIndicator size="small" color={THEME.primary} />
+                                            <Text style={{ color: THEME.textMuted, fontSize: 14 }}>Locating kitchen...</Text>
                                         </View>
-                                    ) : userCompanyDetails || companyName ? (
-                                        <>
-                                            {/* Company Logo and Name */}
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                                                {userCompanyDetails?.logo_url && (
-                                                    <img
-                                                        src={userCompanyDetails.logo_url}
-                                                        alt={`${userCompanyDetails.name} logo`}
-                                                        style={{
-                                                            width: 40,
-                                                            height: 40,
-                                                            borderRadius: 8,
-                                                            objectFit: 'cover',
-                                                            border: '1px solid #e7e5e4',
-                                                        }}
-                                                    />
+                                    ) : companyName ? (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                                            <View style={{
+                                                width: 48,
+                                                height: 48,
+                                                borderRadius: 12,
+                                                backgroundColor: THEME.surface,
+                                                borderWidth: 1,
+                                                borderColor: THEME.border,
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                overflow: 'hidden'
+                                            }}>
+                                                {companyLogoUrl ? (
+                                                    <img src={companyLogoUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <Building2 size={24} color={THEME.textMuted} />
                                                 )}
-                                                <View style={{ flex: 1 }}>
-                                                    <Text style={{ fontWeight: '700', color: '#1c1917', fontSize: 15 }}>
-                                                        {userCompanyDetails?.name || companyName || 'Your Company'}
-                                                    </Text>
-                                                    {userCompanyDetails?.floor_number && (
-                                                        <Text style={{ color: '#78716c', fontSize: 12, marginTop: 2, fontWeight: '500' }}>
-                                                            Floor {userCompanyDetails.floor_number}
-                                                        </Text>
-                                                    )}
+                                            </View>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{ fontWeight: '900', color: THEME.text, fontSize: 16 }}>
+                                                    {companyName}
+                                                </Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                                                    <View style={{ backgroundColor: THEME.accent, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                                                        <Text style={{ color: THEME.primary, fontSize: 11, fontWeight: '800' }}>Floor {companyFloor || '1'}</Text>
+                                                    </View>
+                                                    <Text style={{ color: THEME.textMuted, fontSize: 12, fontWeight: '600' }}>{companyEmailFromAuth ? 'Verified' : 'General delivery'}</Text>
                                                 </View>
                                             </View>
-                                            {/* Contact Email */}
-                                            {userCompanyDetails?.contact_email && (
-                                                <Text style={{ color: '#a8a29e', fontSize: 12, marginTop: 4 }}>
-                                                    {userCompanyDetails.contact_email}
-                                                </Text>
-                                            )}
-                                            {/* Contact Phone */}
-                                            {userCompanyDetails?.contact_phone && (
-                                                <Text style={{ color: '#a8a29e', fontSize: 12, marginTop: 2 }}>
-                                                    {userCompanyDetails.contact_phone}
-                                                </Text>
-                                            )}
-                                        </>
+                                        </View>
                                     ) : (
-                                        <>
-                                            <Text style={{ fontWeight: '600', color: '#a8a29e', fontSize: 14 }}>
-                                                No company assigned
-                                            </Text>
-                                            <Text style={{ color: '#d6d3d1', fontSize: 12, marginTop: 4, fontStyle: 'italic' }}>
-                                                Please contact an administrator
-                                            </Text>
-                                        </>
+                                        <View style={{ padding: 4, alignItems: 'center' }}>
+                                            <Text style={{ color: THEME.textMuted, fontSize: 13, fontStyle: 'italic' }}>Please select a kitchen from settings</Text>
+                                        </View>
                                     )}
                                 </View>
                             </View>
 
-                            {/* Recipient Select */}
-                            <View style={{ marginBottom: 24 }}>
-                                <Text style={{
-                                    fontSize: 11,
-                                    fontWeight: '700',
-                                    color: '#78716c',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: 1,
-                                    marginBottom: 10,
-                                }}>Recipient</Text>
-                                <select
-                                    className="order-recipient-select"
-                                    value={selectedEmployeeId}
-                                    onChange={(e: any) => setSelectedEmployeeId(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '14px 16px',
-                                        fontSize: 15,
-                                        fontWeight: '600',
-                                        color: '#1c1917',
-                                        backgroundColor: '#fafaf9',
-                                        border: '1px solid #e7e5e4',
-                                        borderRadius: 12,
-                                        outline: 'none',
-                                        cursor: 'pointer',
-                                        fontFamily: 'inherit',
-                                        appearance: 'none',
-                                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'right 12px center',
-                                        backgroundSize: 18,
-                                        paddingRight: 44,
-                                    }}
-                                >
-                                    <option value="">Who is this for?</option>
-                                    {employees.map((e: any) => <option key={e.id} value={e.id}>{e.name}</option>)}
-                                </select>
+                            {/* Recipient Section (Fixed to User) */}
+                            <View style={{
+                                marginBottom: 28,
+                                padding: 18,
+                                backgroundColor: THEME.background,
+                                borderRadius: 16,
+                                borderWidth: 1,
+                                borderColor: THEME.border,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 12
+                            }}>
+                                <View style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 20,
+                                    backgroundColor: THEME.accent,
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <Text style={{ color: THEME.primary, fontWeight: '800', fontSize: 16 }}>
+                                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                                    </Text>
+                                </View>
+                                <View>
+                                    <Text style={{ fontSize: 11, fontWeight: '800', color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ordering for</Text>
+                                    <Text style={{ fontSize: 14, fontWeight: '800', color: THEME.text }}>{user?.email || 'Logged in user'}</Text>
+                                </View>
                             </View>
 
-                            {/* Cart & Place Order */}
+                            {/* Cart Section */}
                             <View style={{
-                                borderTopWidth: 2,
-                                borderTopColor: '#e7e5e4',
-                                borderTopStyle: 'dashed',
                                 paddingTop: 24,
+                                borderTopWidth: 2,
+                                borderTopColor: THEME.border,
+                                borderTopStyle: 'dashed',
                             }}>
                                 {cart.length > 0 ? (
                                     <View>
-                                        {cart.map(item => (
-                                            <View
-                                                key={item.itemId}
-                                                style={{
-                                                    marginBottom: 14,
-                                                    paddingVertical: 10,
-                                                    paddingHorizontal: 12,
-                                                    backgroundColor: '#fafaf9',
-                                                    borderRadius: 12,
-                                                    borderWidth: 1,
-                                                    borderColor: '#e7e5e4',
-                                                }}
-                                            >
-                                                {/* Item name and remove button */}
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                                    <Text style={{ color: '#1c1917', fontWeight: '700', fontSize: 14, flex: 1 }}>{item.name}</Text>
-                                                    <Pressable
-                                                        onPress={() => removeFromCart(item.itemId)}
-                                                        style={({ pressed }: any) => ({
-                                                            width: 24,
-                                                            height: 24,
-                                                            borderRadius: 12,
-                                                            backgroundColor: pressed ? '#fee2e2' : 'transparent',
+                                        <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
+                                            <View style={{ gap: 12 }}>
+                                                {cart.map(item => (
+                                                    <View
+                                                        key={item.itemId}
+                                                        style={{
+                                                            flexDirection: 'row',
                                                             alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                        })}
+                                                            gap: 12,
+                                                            padding: 12,
+                                                            backgroundColor: THEME.background,
+                                                            borderRadius: 14,
+                                                            borderWidth: 1,
+                                                            borderColor: THEME.border,
+                                                        }}
                                                     >
-                                                        <X size={14} color="#ef4444" strokeWidth={3} />
-                                                    </Pressable>
-                                                </View>
+                                                        <View style={{ flex: 1 }}>
+                                                            <Text style={{ color: THEME.text, fontWeight: '800', fontSize: 14 }}>{item.name}</Text>
+                                                            <Text style={{ color: THEME.primary, fontWeight: '700', fontSize: 12 }}>ETB {item.price}</Text>
+                                                        </View>
 
-                                                {/* Quantity controls and price */}
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                                                        {/* Minus button */}
+                                                        <View style={{
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            backgroundColor: THEME.surface,
+                                                            borderRadius: 10,
+                                                            borderWidth: 1,
+                                                            borderColor: THEME.border,
+                                                            padding: 4,
+                                                            gap: 10
+                                                        }}>
+                                                            <Pressable
+                                                                onPress={() => updateCartQuantity(item.itemId, item.quantity - 1)}
+                                                                style={{ padding: 4 }}
+                                                            >
+                                                                <Minus size={14} color={THEME.text} />
+                                                            </Pressable>
+                                                            <Text style={{ fontWeight: '800', fontSize: 14, minWidth: 20, textAlign: 'center' }}>{item.quantity}</Text>
+                                                            <Pressable
+                                                                onPress={() => updateCartQuantity(item.itemId, item.quantity + 1)}
+                                                                style={{ padding: 4 }}
+                                                            >
+                                                                <Plus size={14} color={THEME.text} />
+                                                            </Pressable>
+                                                        </View>
+
                                                         <Pressable
-                                                            onPress={() => updateCartQuantity(item.itemId, item.quantity - 1)}
-                                                            style={({ pressed }: any) => ({
-                                                                width: 28,
-                                                                height: 28,
-                                                                borderRadius: 6,
-                                                                backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
-                                                                borderWidth: 1,
-                                                                borderColor: '#e7e5e4',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                            })}
+                                                            onPress={() => removeFromCart(item.itemId)}
+                                                            style={{ padding: 6, opacity: 0.6 }}
                                                         >
-                                                            <Minus size={14} color="#78716c" strokeWidth={3} />
-                                                        </Pressable>
-
-                                                        {/* Quantity display */}
-                                                        <Text style={{
-                                                            fontSize: 15,
-                                                            fontWeight: '800',
-                                                            color: '#1c1917',
-                                                            minWidth: 28,
-                                                            textAlign: 'center',
-                                                        }}>{item.quantity}</Text>
-
-                                                        {/* Plus button */}
-                                                        <Pressable
-                                                            onPress={() => updateCartQuantity(item.itemId, item.quantity + 1)}
-                                                            style={({ pressed }: any) => ({
-                                                                width: 28,
-                                                                height: 28,
-                                                                borderRadius: 6,
-                                                                backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
-                                                                borderWidth: 1,
-                                                                borderColor: '#e7e5e4',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                            })}
-                                                        >
-                                                            <Plus size={14} color="#b45309" strokeWidth={3} />
+                                                            <X size={16} color={THEME.textMuted} strokeWidth={2.5} />
                                                         </Pressable>
                                                     </View>
-
-                                                    {/* Item total */}
-                                                    <Text style={{ fontWeight: '700', color: '#b45309', fontSize: 15, fontVariant: ['tabular-nums'] }}>
-                                                        ETB {item.price * item.quantity}
-                                                    </Text>
-                                                </View>
+                                                ))}
                                             </View>
-                                        ))}
-                                        <View style={{
-                                            flexDirection: 'row',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            marginTop: 16,
-                                            marginBottom: 24,
-                                            paddingTop: 16,
-                                            borderTopWidth: 1,
-                                            borderTopColor: '#e7e5e4',
-                                        }}>
-                                            <Text style={{ fontSize: 14, fontWeight: '600', color: '#78716c' }}>Total</Text>
-                                            <Text style={{ fontSize: 20, fontWeight: '800', color: '#b45309', fontVariant: ['tabular-nums'] }}>ETB {totalPrice}</Text>
-                                        </View>
-                                        <Pressable
-                                            onPress={placeOrder}
-                                            disabled={createOrder.isPending}
-                                            style={({ pressed }: any) => ({
-                                                backgroundColor: createOrder.isPending ? '#a8a29e' : '#b45309',
-                                                paddingVertical: 16,
-                                                paddingHorizontal: 24,
-                                                borderRadius: 12,
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                opacity: pressed ? 0.9 : 1,
-                                                flexDirection: 'row',
-                                                gap: 10,
-                                            })}
-                                        >
-                                            {createOrder.isPending ? (
+                                        </ScrollView>
+
+                                        <View style={{ marginTop: 28 }}>
+                                            {!showConfirmation ? (
                                                 <>
-                                                    <ActivityIndicator size="small" color="#ffffff" />
-                                                    <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>Placing Order...</Text>
+                                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+                                                        <Text style={{ fontSize: 14, fontWeight: '700', color: THEME.textMuted }}>Grand Total</Text>
+                                                        <Text style={{ fontSize: 28, fontWeight: '900', color: THEME.text, fontVariant: ['tabular-nums'] }}>
+                                                            <Text style={{ fontSize: 16, color: THEME.primary }}>ETB</Text> {totalPrice}
+                                                        </Text>
+                                                    </View>
+
+                                                    <Pressable
+                                                        onPress={() => setShowConfirmation(true)}
+                                                        style={({ pressed }: any) => ({
+                                                            backgroundColor: pressed ? THEME.secondary : THEME.primary,
+                                                            paddingVertical: 18,
+                                                            borderRadius: 18,
+                                                            alignItems: 'center',
+                                                            shadowColor: THEME.primary,
+                                                            shadowOffset: { width: 0, height: 8 },
+                                                            shadowOpacity: pressed ? 0.2 : 0.4,
+                                                            shadowRadius: 16,
+                                                            transform: [{ scale: pressed ? 0.98 : 1 }],
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'center',
+                                                            gap: 12
+                                                        })}
+                                                    >
+                                                        <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 0.5 }}>
+                                                            Place Your Order
+                                                        </Text>
+                                                    </Pressable>
                                                 </>
                                             ) : (
-                                                <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>Place Order</Text>
+                                                <View style={{
+                                                    backgroundColor: THEME.accent,
+                                                    padding: 24,
+                                                    borderRadius: 20,
+                                                    borderWidth: 1,
+                                                    borderColor: THEME.secondary,
+                                                }}>
+                                                    <Text style={{ fontSize: 18, fontWeight: '900', color: THEME.text, marginBottom: 8, textAlign: 'center' }}>
+                                                        Confirm Your Order?
+                                                    </Text>
+                                                    <Text style={{ fontSize: 13, color: THEME.textMuted, textAlign: 'center', marginBottom: 20, lineHeight: 18 }}>
+                                                        You are about to place an order for {cart.reduce((sum, i) => sum + i.quantity, 0)} items totaling <Text style={{ fontWeight: '700', color: THEME.text }}>ETB {totalPrice}</Text>.
+                                                    </Text>
+
+                                                    <Pressable
+                                                        onPress={placeOrder}
+                                                        disabled={createOrder.isPending}
+                                                        style={({ pressed }: any) => ({
+                                                            backgroundColor: createOrder.isPending ? THEME.textMuted : (pressed ? '#166534' : '#15803d'),
+                                                            paddingVertical: 16,
+                                                            borderRadius: 14,
+                                                            alignItems: 'center',
+                                                            marginBottom: 12,
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'center',
+                                                            gap: 8
+                                                        })}
+                                                    >
+                                                        {createOrder.isPending && <ActivityIndicator size="small" color="#FFFFFF" />}
+                                                        <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '800' }}>
+                                                            {createOrder.isPending ? 'Placing...' : 'Yes, Confirm Order'}
+                                                        </Text>
+                                                    </Pressable>
+
+                                                    <Pressable
+                                                        onPress={() => setShowConfirmation(false)}
+                                                        disabled={createOrder.isPending}
+                                                        style={({ pressed }: any) => ({
+                                                            paddingVertical: 12,
+                                                            alignItems: 'center',
+                                                            opacity: pressed ? 0.6 : 1
+                                                        })}
+                                                    >
+                                                        <Text style={{ color: THEME.primary, fontSize: 14, fontWeight: '700' }}>
+                                                            Go Back to Cart
+                                                        </Text>
+                                                    </Pressable>
+                                                </View>
                                             )}
-                                        </Pressable>
+                                        </View>
                                     </View>
                                 ) : (
                                     <View style={{
-                                        padding: 32,
                                         alignItems: 'center',
-                                        backgroundColor: '#fafaf9',
-                                        borderRadius: 14,
+                                        backgroundColor: THEME.background,
+                                        borderRadius: 20,
+                                        padding: 40,
                                         borderWidth: 1,
-                                        borderColor: '#e7e5e4',
+                                        borderColor: THEME.border,
                                         borderStyle: 'dashed',
                                     }}>
                                         <View style={{
-                                            width: 48,
-                                            height: 48,
-                                            borderRadius: 24,
-                                            backgroundColor: '#f5f5f4',
+                                            width: 64,
+                                            height: 64,
+                                            borderRadius: 32,
+                                            backgroundColor: THEME.surface,
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            marginBottom: 12,
+                                            marginBottom: 16,
+                                            shadowColor: '#000',
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.05,
+                                            shadowRadius: 10,
                                         }}>
-                                            <Text style={{ fontSize: 20, color: '#a8a29e' }}>●</Text>
+                                            <UtensilsCrossed size={28} color={THEME.border} />
                                         </View>
-                                        <Text style={{ color: '#78716c', fontSize: 14, fontWeight: '600' }}>Your cart is empty</Text>
-                                        <Text style={{ color: '#a8a29e', fontSize: 13, marginTop: 4 }}>Add items from the menu</Text>
+                                        <Text style={{ color: THEME.text, fontSize: 16, fontWeight: '800', textAlign: 'center' }}>Your cart is empty</Text>
+                                        <Text style={{ color: THEME.textMuted, fontSize: 13, marginTop: 6, textAlign: 'center' }}>Select items from the menu to build your order</Text>
                                     </View>
                                 )}
                             </View>
-                        </View>
+                        </ScrollView>
                     </View>
                 </View>
-            </View >
+            </div>
 
             {/* Quantity Selector Modal */}
             {
@@ -816,7 +1102,7 @@ export default function OrderPage() {
                     <Pressable
                         onPress={closeQuantityModal}
                         style={{
-                            position: 'absolute',
+                            position: 'fixed',
                             top: 0,
                             left: 0,
                             right: 0,
@@ -943,12 +1229,12 @@ export default function OrderPage() {
                                         flex: 2,
                                         paddingVertical: 14,
                                         borderRadius: 12,
-                                        backgroundColor: pressed ? '#92400e' : '#b45309',
+                                        backgroundColor: pressed ? THEME.secondary : THEME.primary,
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                     })}
                                 >
-                                    <Text style={{ fontWeight: '700', color: '#ffffff', fontSize: 15 }}>Add to Cart</Text>
+                                    <Text style={{ fontWeight: '800', color: '#ffffff', fontSize: 15 }}>Update Cart</Text>
                                 </Pressable>
                             </View>
                         </Pressable>

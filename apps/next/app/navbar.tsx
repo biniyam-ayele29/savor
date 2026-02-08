@@ -14,11 +14,18 @@ const NAV_ITEMS = [
 
 export function NavBar() {
     const pathname = usePathname();
-    const { user, companyName, signOut } = useAuth();
+    const { user, companyName, companyLogoUrl, signOut, role } = useAuth();
 
     if (pathname === '/login' || (pathname === '/' && !user)) return null;
 
-    const displayHeaderLabel = user && companyName ? `@${companyName.replace(/\s+/g, '')}` : 'Office Cafe';
+    const displayHeaderLabel = user && companyName ? `@${companyName.replace(/\s+/g, '')}` : 'Savor';
+
+    // Filter nav items based on role
+    const visibleNavItems = NAV_ITEMS.filter(item => {
+        if (role === 'admin' || role === 'super_admin') return true;
+        // Default users only see "Place Order"
+        return item.href === '/order';
+    });
 
     return (
         <View style={{
@@ -45,24 +52,38 @@ export function NavBar() {
                     width: '100%',
                     maxWidth: 1400,
                 }}>
-                    <TextLink href="/dashboard">
+                    <TextLink href={role === 'admin' || role === 'super_admin' ? "/dashboard" : "/order"}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                             <View style={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: 12,
-                                backgroundImage: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)',
+                                width: 72,
+                                height: 72,
+                                borderRadius: 16,
+                                backgroundColor: '#FFFFFF',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 overflow: 'hidden',
+                                borderWidth: 1,
+                                borderColor: '#e7e5e4',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 10,
                             }}>
-                                <Text style={{ fontSize: 24 }}>{user ? '🏢' : '☕'}</Text>
+                                <img
+                                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/savour/company-logos/savor_logo.png`}
+                                    alt="Company Logo"
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        borderRadius: 12,
+                                    }}
+                                />
                             </View>
                             <View>
-                                <Text style={{ fontSize: 22, fontWeight: '900', color: '#1c1917', letterSpacing: -1 }}>
-                                    {displayHeaderLabel}
+                                <Text style={{ color: '#FFAC1C', fontSize: 28, fontWeight: '900', letterSpacing: -1 }}>
+                                    {companyName || 'Savor'}
                                 </Text>
-                                {user && <Text style={{ fontSize: 10, color: '#b45309', fontWeight: '800', letterSpacing: 1 }}>WORKSPACE CAPTAIN</Text>}
                             </View>
                         </View>
                     </TextLink>
@@ -72,23 +93,34 @@ export function NavBar() {
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
                                 <View style={{ alignItems: 'flex-end' }}>
                                     <Text style={{ color: '#1c1917', fontSize: 14, fontWeight: '800' }}>{user.email?.split('@')[0]}</Text>
-                                    <Text style={{ color: '#78716c', fontSize: 11, fontWeight: '600', textTransform: 'uppercase' }}>Administrator</Text>
+                                    <Text style={{ color: '#78716c', fontSize: 11, fontWeight: '600', textTransform: 'uppercase' }}>
+                                        {role === 'admin' || role === 'super_admin' ? 'Administrator' : 'Member'}
+                                    </Text>
                                 </View>
                                 <View style={{
                                     width: 40,
                                     height: 40,
                                     borderRadius: 20,
-                                    backgroundImage: 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',
+                                    backgroundColor: '#FFFFFF',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     borderWidth: 1,
                                     borderColor: '#e7e5e4',
+                                    overflow: 'hidden'
                                 }}>
-                                    <Text style={{ fontSize: 18 }}>🛡️</Text>
+                                    <img
+                                        src={companyLogoUrl || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/savour/company-logos/savor_logo.png`}
+                                        alt="User Company Logo"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }}
+                                    />
                                 </View>
                                 <Pressable
                                     onPress={() => signOut()}
-                                    style={({ pressed }) => ({
+                                    style={({ pressed }: { pressed: boolean }) => ({
                                         backgroundImage: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
                                         paddingHorizontal: 18,
                                         paddingVertical: 10,
@@ -145,37 +177,37 @@ export function NavBar() {
                         shadowOpacity: 0.04,
                         shadowRadius: 8,
                     }}>
-                        {NAV_ITEMS.map((item) => {
+                        {visibleNavItems.map((item) => {
                             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
                             return (
                                 <View key={item.href} style={{ flex: 1, minWidth: 140 }}>
                                     <TextLink href={item.href}>
                                         <View style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 10,
-                                        paddingHorizontal: 20,
-                                        paddingVertical: 14,
-                                        borderRadius: 12,
-                                        minHeight: 48,
-                                        backgroundImage: isActive ? 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)' : 'transparent',
-                                        shadowColor: isActive ? '#000' : 'transparent',
-                                        shadowOffset: { width: 0, height: 2 },
-                                        shadowOpacity: isActive ? 0.06 : 0,
-                                        shadowRadius: isActive ? 8 : 0,
-                                        borderWidth: 1,
-                                        borderColor: isActive ? 'rgba(180, 83, 9, 0.25)' : 'transparent',
-                                    }}>
-                                        <Text style={{ fontSize: 18 }}>{item.icon}</Text>
-                                        <Text style={{
-                                            fontSize: 14,
-                                            fontWeight: isActive ? '800' : '600',
-                                            color: isActive ? '#1c1917' : '#78716c',
-                                        }} numberOfLines={1}>
-                                            {item.label}
-                                        </Text>
-                                    </View>
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: 10,
+                                            paddingHorizontal: 20,
+                                            paddingVertical: 14,
+                                            borderRadius: 12,
+                                            minHeight: 48,
+                                            backgroundImage: isActive ? 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)' : 'transparent',
+                                            shadowColor: isActive ? '#000' : 'transparent',
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: isActive ? 0.06 : 0,
+                                            shadowRadius: isActive ? 8 : 0,
+                                            borderWidth: 1,
+                                            borderColor: isActive ? 'rgba(180, 83, 9, 0.25)' : 'transparent',
+                                        }}>
+                                            <Text style={{ fontSize: 18 }}>{item.icon}</Text>
+                                            <Text style={{
+                                                fontSize: 14,
+                                                fontWeight: isActive ? '800' : '600',
+                                                color: isActive ? '#1c1917' : '#78716c',
+                                            }} numberOfLines={1}>
+                                                {item.label}
+                                            </Text>
+                                        </View>
                                     </TextLink>
                                 </View>
                             );
