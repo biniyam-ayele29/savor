@@ -5,12 +5,56 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-nati
 import { useMenuItems, useCreateOrder, OrderItem, useCompanies, useEmployees, useAuth, useOrders, supabase } from '@my-app/api';
 import { MenuList } from 'app/features/menu/menu-list';
 import { OrderStatus } from '@my-app/api/types';
+import {
+    Coffee,
+    CheckCircle2,
+    Activity,
+    UtensilsCrossed,
+    Receipt,
+    Plus,
+    Minus,
+    X,
+    Clock,
+    MapPin,
+    Building2,
+    Mail,
+    Phone
+} from 'lucide-react';
 
 const STATUS_COLORS = {
     pending: { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa', label: 'Pending' },
     preparing: { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe', label: 'Preparing' },
     delivering: { bg: '#faf5ff', text: '#7c3aed', border: '#e9d5ff', label: 'Delivering' },
-    delivered: { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0', label: 'Delivered' }
+    delivered: { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0', label: 'Delivered' },
+    unknown: { bg: '#f5f5f4', text: '#57534e', border: '#e7e5e4', label: 'Unknown' }
+};
+
+const getStatusConfig = (status: string) => {
+    if (!status) return STATUS_COLORS.unknown;
+
+    // Normalize status
+    const normalized = status.toLowerCase().trim();
+
+    // Direct match
+    if (STATUS_COLORS[normalized as keyof typeof STATUS_COLORS]) {
+        return STATUS_COLORS[normalized as keyof typeof STATUS_COLORS];
+    }
+
+    // Mappings for non-standard statuses
+    if (normalized.includes('being prepared') || normalized.includes('cooking')) {
+        return { ...STATUS_COLORS.preparing, label: status }; // Keep original label but use preparing colors
+    }
+
+    if (normalized.includes('way') || normalized.includes('route')) {
+        return { ...STATUS_COLORS.delivering, label: status };
+    }
+
+    if (normalized.includes('done') || normalized.includes('complete')) {
+        return { ...STATUS_COLORS.delivered, label: status };
+    }
+
+    // Default fallback - show original text with neutral styling
+    return { ...STATUS_COLORS.unknown, label: status };
 };
 
 export default function OrderPage() {
@@ -163,7 +207,7 @@ export default function OrderPage() {
             // Remove item if quantity is 0 or less
             setCart(prev => prev.filter(i => i.itemId !== itemId));
         } else {
-            setCart(prev => prev.map(i => 
+            setCart(prev => prev.map(i =>
                 i.itemId === itemId ? { ...i, quantity: newQuantity } : i
             ));
         }
@@ -177,7 +221,7 @@ export default function OrderPage() {
     const placeOrder = async () => {
         // Use multiple fallbacks for companyId
         const orderCompanyId = selectedCompanyId || userCompanyDetails?.id || companyId || (employees.length > 0 ? employees[0].companyId : null);
-        
+
         if (!orderCompanyId || !selectedEmployeeId) {
             alert('Please select a recipient');
             return;
@@ -206,8 +250,7 @@ export default function OrderPage() {
     };
 
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const activeOrders = orders.filter((o: any) => ['pending', 'preparing', 'delivering'].includes(o.status));
-    const recentHistory = orders.filter((o: any) => o.status === 'delivered').slice(0, 5);
+    const activeOrders = orders;
 
     // Helper: total item count from order_items (sum of quantities)
     const getTotalItemCount = (order: any) =>
@@ -282,7 +325,9 @@ export default function OrderPage() {
                     }}>
                         {displayHeaderLabel}{' '}
                         <Text style={{ color: '#b45309', fontWeight: '800' }}>Cafe</Text>
-                        <Text style={{ marginLeft: 6 }}>☕</Text>
+                        <View style={{ marginLeft: 8 }}>
+                            <Coffee size={26} color="#b45309" strokeWidth={2.5} />
+                        </View>
                     </Text>
                     <View style={{ height: 20, width: 1, backgroundColor: '#e7e5e4', borderRadius: 1 }} />
                     <Text style={{ color: '#78716c', fontSize: 13, fontWeight: '500' }}>Order Dashboard</Text>
@@ -304,7 +349,7 @@ export default function OrderPage() {
                         shadowOpacity: 0.15,
                         shadowRadius: 8,
                     }}>
-                        <Text style={{ fontSize: 16 }}>✓</Text>
+                        <CheckCircle2 size={18} color="#047857" strokeWidth={3} />
                         <Text style={{ color: '#047857', fontWeight: '700', fontSize: 14 }}>Order Received!</Text>
                     </View>
                 )}
@@ -331,7 +376,7 @@ export default function OrderPage() {
                             marginBottom: 20,
                         }}>Live Activity</Text>
 
-                        {activeOrders.length === 0 && recentHistory.length === 0 ? (
+                        {activeOrders.length === 0 ? (
                             <View style={{
                                 padding: 36,
                                 backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
@@ -350,7 +395,7 @@ export default function OrderPage() {
                                     justifyContent: 'center',
                                     marginBottom: 16,
                                 }}>
-                                    <Text style={{ fontSize: 22 }}>📡</Text>
+                                    <Activity size={24} color="#b45309" />
                                 </View>
                                 <Text style={{ color: '#a8a29e', fontSize: 14, fontWeight: '500', textAlign: 'center' }}>
                                     No recent activity to track.
@@ -360,7 +405,7 @@ export default function OrderPage() {
                         ) : (
                             <View style={{ gap: 12 }}>
                                 {activeOrders.map((order: any) => {
-                                    const statusConfig = STATUS_COLORS[order.status as keyof typeof STATUS_COLORS] || STATUS_COLORS.pending;
+                                    const statusConfig = getStatusConfig(order.status);
                                     return (
                                         <View
                                             key={order.id}
@@ -396,72 +441,6 @@ export default function OrderPage() {
                                     );
                                 })}
 
-                                {recentHistory.length > 0 && (
-                                    <View style={{ marginTop: 28 }}>
-                                        <Text style={{
-                                            fontSize: 11,
-                                            fontWeight: '700',
-                                            color: '#a8a29e',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: 1,
-                                            marginBottom: 14,
-                                        }}>Recent Completions</Text>
-                                        {recentHistory.map((order: any) => (
-                                            <View
-                                                key={order.id}
-                                                style={{
-                                                    marginBottom: 14,
-                                                    padding: 14,
-                                                    backgroundImage: 'linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%)',
-                                                    borderRadius: 12,
-                                                    borderWidth: 1,
-                                                    borderColor: '#e7e5e4',
-                                                }}
-                                            >
-                                                {/* Header: Employee + Status */}
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                                    <View style={{ flex: 1 }}>
-                                                        <Text style={{ fontWeight: '700', color: '#44403c', fontSize: 14 }}>{order.employeeName || 'Guest'}</Text>
-                                                        <Text style={{ color: '#a8a29e', fontSize: 11, marginTop: 2 }}>
-                                                            #{order.id?.slice(0, 8)} · Floor {order.floorNumber ?? '—'}
-                                                        </Text>
-                                                    </View>
-                                                    <View style={{
-                                                        backgroundImage: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                                                        paddingHorizontal: 10,
-                                                        paddingVertical: 4,
-                                                        borderRadius: 8,
-                                                        borderWidth: 1,
-                                                        borderColor: '#a7f3d0',
-                                                    }}>
-                                                        <Text style={{ color: '#047857', fontSize: 11, fontWeight: '700' }}>Delivered</Text>
-                                                    </View>
-                                                </View>
-
-                                                {/* Order Items from order_items table */}
-                                                {order.items && order.items.length > 0 && (
-                                                    <View style={{ marginBottom: 10, paddingLeft: 4 }}>
-                                                        {order.items.map((item: OrderItem, idx: number) => (
-                                                            <Text key={item.itemId || idx} style={{ color: '#78716c', fontSize: 12, marginBottom: 2 }}>
-                                                                {item.quantity}× {item.name} — ETB {item.price * item.quantity}
-                                                            </Text>
-                                                        ))}
-                                                    </View>
-                                                )}
-
-                                                {/* Footer: Total + Time */}
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#e7e5e4', paddingTop: 8 }}>
-                                                    <Text style={{ fontWeight: '700', color: '#1c1917', fontSize: 13 }}>
-                                                        Total: ETB {order.totalPrice ?? 0}
-                                                    </Text>
-                                                    <Text style={{ color: '#a8a29e', fontSize: 11 }}>
-                                                        {order.createdAt ? new Date(order.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        ))}
-                                    </View>
-                                )}
                             </View>
                         )}
                     </ScrollView>
@@ -497,7 +476,7 @@ export default function OrderPage() {
                                     borderWidth: 1,
                                     borderColor: '#fed7aa',
                                 }}>
-                                    <Text style={{ fontSize: 36 }}>🍽️</Text>
+                                    <UtensilsCrossed size={40} color="#c2410c" />
                                 </View>
                                 <Text style={{ fontSize: 17, fontWeight: '600', color: '#44403c', marginBottom: 8 }}>Menu Loading</Text>
                                 <Text style={{ fontSize: 14, color: '#a8a29e' }}>Preparing today's selection</Text>
@@ -543,7 +522,7 @@ export default function OrderPage() {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}>
-                                    <Text style={{ fontSize: 20 }}>🎫</Text>
+                                    <Receipt size={20} color="#ffffff" />
                                 </View>
                                 <View>
                                     <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '800', letterSpacing: -0.3 }}>Your Order</Text>
@@ -704,10 +683,10 @@ export default function OrderPage() {
                                                             justifyContent: 'center',
                                                         })}
                                                     >
-                                                        <Text style={{ color: '#ef4444', fontSize: 14, fontWeight: '700' }}>×</Text>
+                                                        <X size={14} color="#ef4444" strokeWidth={3} />
                                                     </Pressable>
                                                 </View>
-                                                
+
                                                 {/* Quantity controls and price */}
                                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -725,18 +704,18 @@ export default function OrderPage() {
                                                                 justifyContent: 'center',
                                                             })}
                                                         >
-                                                            <Text style={{ fontSize: 16, fontWeight: '700', color: '#78716c' }}>-</Text>
+                                                            <Minus size={14} color="#78716c" strokeWidth={3} />
                                                         </Pressable>
-                                                        
+
                                                         {/* Quantity display */}
-                                                        <Text style={{ 
-                                                            fontSize: 15, 
-                                                            fontWeight: '800', 
+                                                        <Text style={{
+                                                            fontSize: 15,
+                                                            fontWeight: '800',
                                                             color: '#1c1917',
                                                             minWidth: 28,
                                                             textAlign: 'center',
                                                         }}>{item.quantity}</Text>
-                                                        
+
                                                         {/* Plus button */}
                                                         <Pressable
                                                             onPress={() => updateCartQuantity(item.itemId, item.quantity + 1)}
@@ -751,10 +730,10 @@ export default function OrderPage() {
                                                                 justifyContent: 'center',
                                                             })}
                                                         >
-                                                            <Text style={{ fontSize: 16, fontWeight: '700', color: '#b45309' }}>+</Text>
+                                                            <Plus size={14} color="#b45309" strokeWidth={3} />
                                                         </Pressable>
                                                     </View>
-                                                    
+
                                                     {/* Item total */}
                                                     <Text style={{ fontWeight: '700', color: '#b45309', fontSize: 15, fontVariant: ['tabular-nums'] }}>
                                                         ETB {item.price * item.quantity}
@@ -829,151 +808,153 @@ export default function OrderPage() {
                         </View>
                     </View>
                 </View>
-            </View>
+            </View >
 
             {/* Quantity Selector Modal */}
-            {selectedMenuItem && (
-                <Pressable
-                    onPress={closeQuantityModal}
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1000,
-                    }}
-                >
+            {
+                selectedMenuItem && (
                     <Pressable
-                        onPress={(e: any) => e.stopPropagation()}
+                        onPress={closeQuantityModal}
                         style={{
-                            backgroundColor: '#ffffff',
-                            borderRadius: 20,
-                            padding: 28,
-                            width: 340,
-                            maxWidth: '90%',
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 10 },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 20,
-                            elevation: 10,
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1000,
                         }}
                     >
-                        {/* Modal Header */}
-                        <View style={{ alignItems: 'center', marginBottom: 24 }}>
-                            <Text style={{ fontSize: 20, fontWeight: '800', color: '#1c1917', marginBottom: 4 }}>
-                                {selectedMenuItem.name}
-                            </Text>
-                            <Text style={{ fontSize: 16, fontWeight: '700', color: '#b45309' }}>
-                                ETB {selectedMenuItem.price} each
-                            </Text>
-                        </View>
+                        <Pressable
+                            onPress={(e: any) => e.stopPropagation()}
+                            style={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: 20,
+                                padding: 28,
+                                width: 340,
+                                maxWidth: '90%',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 10 },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 20,
+                                elevation: 10,
+                            }}
+                        >
+                            {/* Modal Header */}
+                            <View style={{ alignItems: 'center', marginBottom: 24 }}>
+                                <Text style={{ fontSize: 20, fontWeight: '800', color: '#1c1917', marginBottom: 4 }}>
+                                    {selectedMenuItem.name}
+                                </Text>
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#b45309' }}>
+                                    ETB {selectedMenuItem.price} each
+                                </Text>
+                            </View>
 
-                        {/* Quantity Selector */}
-                        <View style={{ alignItems: 'center', marginBottom: 28 }}>
-                            <Text style={{ fontSize: 11, fontWeight: '700', color: '#78716c', marginBottom: 14, textTransform: 'uppercase', letterSpacing: 1 }}>
-                                Quantity
-                            </Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-                                <Pressable
-                                    onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
-                                    style={({ pressed }: any) => ({
-                                        width: 40,
-                                        height: 40,
+                            {/* Quantity Selector */}
+                            <View style={{ alignItems: 'center', marginBottom: 28 }}>
+                                <Text style={{ fontSize: 11, fontWeight: '700', color: '#78716c', marginBottom: 14, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                    Quantity
+                                </Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                                    <Pressable
+                                        onPress={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
+                                        style={({ pressed }: any) => ({
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: 8,
+                                            backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
+                                            borderWidth: 1,
+                                            borderColor: '#e7e5e4',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        })}
+                                    >
+                                        <Text style={{ fontSize: 18, fontWeight: '700', color: '#78716c' }}>-</Text>
+                                    </Pressable>
+
+                                    <View style={{
+                                        minWidth: 60,
+                                        paddingHorizontal: 16,
+                                        height: 44,
+                                        backgroundColor: '#fafaf9',
                                         borderRadius: 8,
-                                        backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
                                         borderWidth: 1,
                                         borderColor: '#e7e5e4',
                                         alignItems: 'center',
                                         justifyContent: 'center',
+                                    }}>
+                                        <Text style={{ fontSize: 20, fontWeight: '800', color: '#1c1917' }}>{itemQuantity}</Text>
+                                    </View>
+
+                                    <Pressable
+                                        onPress={() => setItemQuantity(itemQuantity + 1)}
+                                        style={({ pressed }: any) => ({
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: 8,
+                                            backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
+                                            borderWidth: 1,
+                                            borderColor: '#e7e5e4',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        })}
+                                    >
+                                        <Text style={{ fontSize: 18, fontWeight: '700', color: '#b45309' }}>+</Text>
+                                    </Pressable>
+                                </View>
+                            </View>
+
+                            {/* Total Price */}
+                            <View style={{
+                                backgroundColor: '#fafaf9',
+                                padding: 16,
+                                borderRadius: 12,
+                                marginBottom: 20,
+                                alignItems: 'center',
+                            }}>
+                                <Text style={{ fontSize: 12, color: '#78716c', marginBottom: 4 }}>Subtotal</Text>
+                                <Text style={{ fontSize: 24, fontWeight: '800', color: '#1c1917' }}>
+                                    ETB {selectedMenuItem.price * itemQuantity}
+                                </Text>
+                            </View>
+
+                            {/* Action Buttons */}
+                            <View style={{ flexDirection: 'row', gap: 12 }}>
+                                <Pressable
+                                    onPress={closeQuantityModal}
+                                    style={({ pressed }: any) => ({
+                                        flex: 1,
+                                        paddingVertical: 14,
+                                        borderRadius: 12,
+                                        backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
+                                        borderWidth: 1,
+                                        borderColor: '#e7e5e4',
+                                        alignItems: 'center',
                                     })}
                                 >
-                                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#78716c' }}>-</Text>
+                                    <Text style={{ fontWeight: '700', color: '#78716c', fontSize: 15 }}>Cancel</Text>
                                 </Pressable>
 
-                                <View style={{
-                                    minWidth: 60,
-                                    paddingHorizontal: 16,
-                                    height: 44,
-                                    backgroundColor: '#fafaf9',
-                                    borderRadius: 8,
-                                    borderWidth: 1,
-                                    borderColor: '#e7e5e4',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                    <Text style={{ fontSize: 20, fontWeight: '800', color: '#1c1917' }}>{itemQuantity}</Text>
-                                </View>
-
                                 <Pressable
-                                    onPress={() => setItemQuantity(itemQuantity + 1)}
+                                    onPress={addToCartWithQuantity}
                                     style={({ pressed }: any) => ({
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: 8,
-                                        backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
-                                        borderWidth: 1,
-                                        borderColor: '#e7e5e4',
+                                        flex: 2,
+                                        paddingVertical: 14,
+                                        borderRadius: 12,
+                                        backgroundColor: pressed ? '#92400e' : '#b45309',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                     })}
                                 >
-                                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#b45309' }}>+</Text>
+                                    <Text style={{ fontWeight: '700', color: '#ffffff', fontSize: 15 }}>Add to Cart</Text>
                                 </Pressable>
                             </View>
-                        </View>
-
-                        {/* Total Price */}
-                        <View style={{
-                            backgroundColor: '#fafaf9',
-                            padding: 16,
-                            borderRadius: 12,
-                            marginBottom: 20,
-                            alignItems: 'center',
-                        }}>
-                            <Text style={{ fontSize: 12, color: '#78716c', marginBottom: 4 }}>Subtotal</Text>
-                            <Text style={{ fontSize: 24, fontWeight: '800', color: '#1c1917' }}>
-                                ETB {selectedMenuItem.price * itemQuantity}
-                            </Text>
-                        </View>
-
-                        {/* Action Buttons */}
-                        <View style={{ flexDirection: 'row', gap: 12 }}>
-                            <Pressable
-                                onPress={closeQuantityModal}
-                                style={({ pressed }: any) => ({
-                                    flex: 1,
-                                    paddingVertical: 14,
-                                    borderRadius: 12,
-                                    backgroundColor: pressed ? '#f5f5f4' : '#ffffff',
-                                    borderWidth: 1,
-                                    borderColor: '#e7e5e4',
-                                    alignItems: 'center',
-                                })}
-                            >
-                                <Text style={{ fontWeight: '700', color: '#78716c', fontSize: 15 }}>Cancel</Text>
-                            </Pressable>
-
-                            <Pressable
-                                onPress={addToCartWithQuantity}
-                                style={({ pressed }: any) => ({
-                                    flex: 2,
-                                    paddingVertical: 14,
-                                    borderRadius: 12,
-                                    backgroundColor: pressed ? '#92400e' : '#b45309',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                })}
-                            >
-                                <Text style={{ fontWeight: '700', color: '#ffffff', fontSize: 15 }}>Add to Cart</Text>
-                            </Pressable>
-                        </View>
+                        </Pressable>
                     </Pressable>
-                </Pressable>
-            )}
-        </View>
+                )
+            }
+        </View >
     );
 }
