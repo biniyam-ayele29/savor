@@ -23,11 +23,14 @@ export interface ThemeColors {
     border: string;
     borderLight: string;
     
-    // Brand colors
-    primary: string;
+    // Brand colors - from Savor logo
+    primary: string;          // Orange/Gold #E68B2C
     primaryLight: string;
     primaryDark: string;
-    accent: string;
+    secondary: string;        // Green #7FA14B
+    secondaryLight: string;
+    accent: string;           // Dark Brown #3B2415
+    accentLight: string;
     
     // Status colors
     success: string;
@@ -51,7 +54,7 @@ const lightTheme: ThemeColors = {
     surface: '#ffffff',
     surfaceHover: '#f9fafb',
     
-    text: '#1c1917',
+    text: '#3B2415',
     textSecondary: '#78716c',
     textTertiary: '#a8a29e',
     
@@ -61,14 +64,17 @@ const lightTheme: ThemeColors = {
     primary: '#E68B2C',
     primaryLight: '#ffedd5',
     primaryDark: '#D97706',
-    accent: '#fef3c7',
+    secondary: '#7FA14B',
+    secondaryLight: '#f0fdf4',
+    accent: '#3B2415',
+    accentLight: '#78350f',
     
-    success: '#047857',
-    successLight: '#ecfdf5',
+    success: '#7FA14B',
+    successLight: '#f0fdf4',
     error: '#dc2626',
     errorLight: '#fef2f2',
-    warning: '#f59e0b',
-    warningLight: '#fef3c7',
+    warning: '#E68B2C',
+    warningLight: '#fff7ed',
     
     gradientPrimary: 'linear-gradient(135deg, #E68B2C 0%, #D97706 100%)',
     gradientBackground: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 50%, #e7e5e4 100%)',
@@ -76,35 +82,38 @@ const lightTheme: ThemeColors = {
 };
 
 const darkTheme: ThemeColors = {
-    background: '#0c0a09',
-    backgroundSecondary: '#1c1917',
-    backgroundTertiary: '#292524',
+    background: '#0c0a08',
+    backgroundSecondary: '#1a1410',
+    backgroundTertiary: '#2b231c',
     
-    surface: '#262320',
-    surfaceHover: '#2d2926',
+    surface: '#1c1814',
+    surfaceHover: '#252119',
     
     text: '#fafaf9',
-    textSecondary: '#d6d3d1',
-    textTertiary: '#a8a29e',
+    textSecondary: '#e7e5e4',
+    textTertiary: '#d6d3d1',
     
-    border: '#3f3a37',
-    borderLight: '#57534e',
+    border: '#3B2415',
+    borderLight: '#4a3d2f',
     
-    primary: '#fb923c',
-    primaryLight: '#78350f',
-    primaryDark: '#ea580c',
-    accent: '#78350f',
+    primary: '#E68B2C',
+    primaryLight: '#92520a',
+    primaryDark: '#B45309',
+    secondary: '#8fb458',
+    secondaryLight: '#1e3a1e',
+    accent: '#3B2415',
+    accentLight: '#1a0f08',
     
-    success: '#22c55e',
-    successLight: '#064e3b',
+    success: '#8fb458',
+    successLight: '#1e3a1e',
     error: '#ef4444',
     errorLight: '#450a0a',
-    warning: '#fb923c',
-    warningLight: '#451a03',
+    warning: '#E68B2C',
+    warningLight: '#78350f',
     
-    gradientPrimary: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)',
-    gradientBackground: 'linear-gradient(180deg, #0c0a09 0%, #1c1917 50%, #292524 100%)',
-    gradientSurface: 'linear-gradient(135deg, #262320 0%, #292524 100%)',
+    gradientPrimary: 'linear-gradient(135deg, #E68B2C 0%, #D97706 100%)',
+    gradientBackground: 'linear-gradient(180deg, #0c0a08 0%, #1a1410 50%, #2b231c 100%)',
+    gradientSurface: 'linear-gradient(135deg, #1c1814 0%, #252119 100%)',
 };
 
 interface ThemeContextType {

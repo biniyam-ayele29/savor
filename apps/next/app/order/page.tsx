@@ -29,7 +29,7 @@ const STATUS_COLORS = {
     pending: { bg: '#FFF7ED', text: '#9A3412', border: '#FFEDD5', label: 'Pending' },
     preparing: { bg: '#EFF6FF', text: '#1E40AF', border: '#DBEAFE', label: 'Preparing' },
     delivering: { bg: '#F5F3FF', text: '#5B21B6', border: '#EDE9FE', label: 'Delivering' },
-    delivered: { bg: '#ECFDF5', text: '#065F46', border: '#D1FAE5', label: 'Delivered' },
+    delivered: { bg: '#f0fdf4', text: '#7FA14B', border: '#86efac', label: 'Delivered' },
     unknown: { bg: '#F5F5F4', text: '#44403C', border: '#E7E5E4', label: 'Unknown' }
 };
 
@@ -304,7 +304,7 @@ export default function OrderPage() {
                     borderWidth: 1,
                     borderColor: '#fed7aa',
                 }}>
-                    <ActivityIndicator size="large" color="#E68B2C" />
+                    <ActivityIndicator size="large" color={colors.primary} />
                 </View>
                 <Text style={{
                     fontSize: 15,
@@ -347,8 +347,8 @@ export default function OrderPage() {
                 zIndex: 10
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
-                    <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>Live Kitchen</Text>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.secondary }} />
+                    <Text style={{ color: colors.secondary, fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 }}>Live Kitchen</Text>
                 </View>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
@@ -358,7 +358,7 @@ export default function OrderPage() {
                     
                     {orderPlaced && (
                         <View style={{
-                            backgroundColor: '#D1FAE5',
+                            backgroundColor: '#dcfce7',
                             paddingHorizontal: 16,
                             paddingVertical: 8,
                             borderRadius: 100,
@@ -366,10 +366,10 @@ export default function OrderPage() {
                             alignItems: 'center',
                             gap: 8,
                             borderWidth: 1,
-                            borderColor: '#A7F3D0',
+                            borderColor: '#86efac',
                         }}>
-                            <CheckCircle2 size={16} color="#065F46" strokeWidth={3} />
-                            <Text style={{ color: '#065F46', fontWeight: '800', fontSize: 13 }}>Order Confirmed</Text>
+                            <CheckCircle2 size={16} color="#7FA14B" strokeWidth={3} />
+                            <Text style={{ color: '#7FA14B', fontWeight: '800', fontSize: 13 }}>Order Confirmed</Text>
                         </View>
                     )}
                 </View>
@@ -642,7 +642,7 @@ export default function OrderPage() {
                                                             <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
                                                                 Order #{order.id.slice(0, 8).toUpperCase()}
                                                             </Text>
-                                                            <CheckCircle2 size={16} color="#15803d" />
+                                                            <CheckCircle2 size={16} color="#7FA14B" />
                                                         </View>
                                                         <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: 2, textTransform: 'capitalize' }}>
                                                             {order.status} • {getTotalItemCount(order)} Item{getTotalItemCount(order) > 1 ? 's' : ''}
@@ -885,10 +885,10 @@ export default function OrderPage() {
                                                     {companyName}
                                                 </Text>
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                                                    <View style={{ backgroundColor: colors.accent, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                                                    <View style={{ backgroundColor: colors.primaryLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
                                                         <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>Floor {companyFloor || '1'}</Text>
                                                     </View>
-                                                    <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '600' }}>{companyEmailFromAuth ? 'Verified' : 'General delivery'}</Text>
+                                                    <Text style={{ color: colors.secondary, fontSize: 12, fontWeight: '700' }}>{companyEmailFromAuth ? 'Verified' : 'General delivery'}</Text>
                                                 </View>
                                             </View>
                                         </View>
@@ -1047,7 +1047,7 @@ export default function OrderPage() {
                                                         onPress={placeOrder}
                                                         disabled={createOrder.isPending}
                                                         style={({ pressed }: any) => ({
-                                                            backgroundColor: createOrder.isPending ? colors.textSecondary : (pressed ? '#166534' : '#15803d'),
+                                                            backgroundColor: createOrder.isPending ? colors.textSecondary : (pressed ? '#6B8E3F' : '#7FA14B'),
                                                             paddingVertical: 16,
                                                             borderRadius: 14,
                                                             alignItems: 'center',

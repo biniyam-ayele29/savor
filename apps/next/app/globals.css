@@ -37,20 +37,20 @@ body {
     Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-/* Theme transitions */
+/* Theme transitions - Savor Brand Colors */
 html[data-theme="light"] body {
   background-color: #fafaf9;
-  color: #1c1917;
+  color: #3B2415;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html[data-theme="dark"] body {
-  background-color: #0c0a09;
+  background-color: #0c0a08;
   color: #fafaf9;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Order page recipient select - polished focus/hover */
+/* Order page recipient select - polished focus/hover with Savor Orange */
 .order-recipient-select {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -60,15 +60,15 @@ html[data-theme="dark"] body {
   box-shadow: 0 0 0 3px rgba(230, 139, 44, 0.15);
 }
 .order-recipient-select:hover {
-  border-color: #d6d3d1 !important;
+  border-color: #E68B2C !important;
 }
 
 /* Dark theme adjustments for select */
 html[data-theme="dark"] .order-recipient-select {
-  background-color: #1c1917;
+  background-color: #1c1814;
   color: #fafaf9;
-  border-color: #292524;
+  border-color: #3B2415;
 }
 html[data-theme="dark"] .order-recipient-select:hover {
-  border-color: #44403c !important;
+  border-color: #E68B2C !important;
 }

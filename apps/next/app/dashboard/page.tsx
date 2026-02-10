@@ -41,7 +41,7 @@ export default function DashboardPage() {
                     borderWidth: 1,
                     borderColor: '#fed7aa',
                 }}>
-                    <ActivityIndicator size="large" color="#E68B2C" />
+                    <ActivityIndicator size="large" color={colors.primary} />
                 </View>
                 <Text style={{ fontSize: 15, color: colors.textSecondary, fontWeight: '600' }}>Initializing Dashboard...</Text>
             </View>
@@ -109,15 +109,15 @@ export default function DashboardPage() {
                         <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 16 }}>Total Staff</Text>
                         <Text style={{ fontSize: 48, fontWeight: '900', color: colors.text }}>{employees.length}</Text>
                         <View style={{
-                            backgroundImage: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                            backgroundImage: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
                             paddingHorizontal: 14,
                             paddingVertical: 6,
                             borderRadius: 10,
                             marginTop: 12,
                             borderWidth: 1,
-                            borderColor: '#a7f3d0',
+                            borderColor: '#86efac',
                         }}>
-                            <Text style={{ color: '#047857', fontSize: 13, fontWeight: '700' }}>Active Members</Text>
+                            <Text style={{ color: '#7FA14B', fontSize: 13, fontWeight: '700' }}>Active Members</Text>
                         </View>
                     </View>
 
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                         shadowRadius: 16,
                     }}>
                         <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 16 }}>Pending Orders</Text>
-                        <Text style={{ fontSize: 48, fontWeight: '900', color: '#E68B2C' }}>{pendingOrders.length}</Text>
+                        <Text style={{ fontSize: 48, fontWeight: '900', color: colors.primary }}>{pendingOrders.length}</Text>
                         <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600', marginTop: 12 }}>Total: {companyOrders.length}</Text>
                     </View>
 
@@ -181,12 +181,12 @@ export default function DashboardPage() {
                                 width: 72,
                                 height: 72,
                                 borderRadius: 36,
-                                backgroundImage: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                                backgroundImage: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 marginBottom: 20,
                                 borderWidth: 1,
-                                borderColor: '#bfdbfe',
+                                borderColor: '#86efac',
                             }}>
                                 <Text style={{ fontSize: 36 }}>👥</Text>
                             </View>
@@ -197,12 +197,12 @@ export default function DashboardPage() {
 
                     <TextLink href="/order">
                         <View style={{
-                            backgroundImage: 'linear-gradient(135deg, #E68B2C 0%, #D97706 50%, #B45309 100%)',
+                            backgroundImage: colors.gradientPrimary,
                             padding: 36,
                             borderRadius: 20,
                             width: 340,
                             alignItems: 'center',
-                            shadowColor: '#E68B2C',
+                            shadowColor: colors.primary,
                             shadowOffset: { width: 0, height: 8 },
                             shadowOpacity: 0.3,
                             shadowRadius: 24,

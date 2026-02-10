@@ -33,7 +33,7 @@ export function NavBar() {
 
     return (
         <View style={{
-            backgroundColor: colors.surface,
+            backgroundColor: colors.background,
             borderBottomWidth: 1,
             borderBottomColor: colors.border,
             borderBottomStyle: 'solid',
@@ -41,9 +41,9 @@ export function NavBar() {
             position: 'sticky',
             top: 0,
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.06,
-            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 16,
         }}>
             {/* Tier 1: System Bar (Logo & Profile) */}
             <View style={{ alignItems: 'center', borderBottomWidth: user ? 1 : 0, borderBottomColor: colors.border, borderBottomStyle: 'solid' }}>
@@ -66,12 +66,12 @@ export function NavBar() {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 overflow: 'hidden',
-                                borderWidth: 1,
+                                borderWidth: 2,
                                 borderColor: colors.border,
-                                shadowColor: '#000',
+                                shadowColor: colors.primary,
                                 shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 10,
+                                shadowOpacity: 0.15,
+                                shadowRadius: 12,
                             }}>
                                 <img
                                     src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/savour/company-logos/savor_logo.png`}
@@ -111,7 +111,7 @@ export function NavBar() {
                                     backgroundColor: colors.surface,
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    borderWidth: 1,
+                                    borderWidth: 2,
                                     borderColor: colors.border,
                                     overflow: 'hidden'
                                 }}>
@@ -152,22 +152,24 @@ export function NavBar() {
             {/* Tier 2: Navigation Tabs */}
             {user && (
                 <View style={{
-                    backgroundImage: colors.gradientBackground,
+                    backgroundColor: colors.backgroundSecondary,
                     paddingVertical: 14,
                     alignItems: 'center',
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
                 }}>
                     <View style={{
                         flexDirection: 'row',
-                        backgroundImage: colors.gradientSurface,
+                        backgroundColor: colors.surface,
                         padding: 6,
                         borderRadius: 16,
                         gap: 6,
                         borderWidth: 1,
                         borderColor: colors.border,
                         shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.04,
-                        shadowRadius: 8,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.08,
+                        shadowRadius: 12,
                     }}>
                         {visibleNavItems.map((item) => {
                             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
@@ -183,19 +185,19 @@ export function NavBar() {
                                             paddingVertical: 14,
                                             borderRadius: 12,
                                             minHeight: 48,
-                                            backgroundImage: isActive ? colors.gradientSurface : 'transparent',
-                                            shadowColor: isActive ? '#000' : 'transparent',
+                                            backgroundColor: isActive ? colors.backgroundSecondary : 'transparent',
+                                            shadowColor: isActive ? colors.primary : 'transparent',
                                             shadowOffset: { width: 0, height: 2 },
-                                            shadowOpacity: isActive ? 0.06 : 0,
+                                            shadowOpacity: isActive ? 0.12 : 0,
                                             shadowRadius: isActive ? 8 : 0,
                                             borderWidth: 1,
-                                            borderColor: isActive ? 'rgba(230, 139, 44, 0.25)' : 'transparent',
+                                            borderColor: isActive ? colors.primary : 'transparent',
                                         }}>
                                             <Text style={{ fontSize: 18 }}>{item.icon}</Text>
                                             <Text style={{
                                                 fontSize: 14,
                                                 fontWeight: isActive ? '800' : '600',
-                                                color: isActive ? colors.text : colors.textSecondary,
+                                                color: isActive ? colors.primary : colors.textSecondary,
                                             }} numberOfLines={1}>
                                                 {item.label}
                                             </Text>

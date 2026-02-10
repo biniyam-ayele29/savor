@@ -199,7 +199,7 @@ export default function EmployeesPage() {
                             <Pressable
                                 onPress={handleSaveEmployee}
                                 style={({ pressed }) => ({
-                                    backgroundImage: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                    backgroundImage: 'linear-gradient(135deg, #7FA14B 0%, #6B8E3F 100%)',
                                     paddingHorizontal: 28,
                                     paddingVertical: 14,
                                     borderRadius: 12,

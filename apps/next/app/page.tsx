@@ -4,10 +4,12 @@ import React, { useEffect } from 'react';
 import { useAuth } from '@my-app/api';
 import { useRouter } from 'next/navigation';
 import { View, Text, ActivityIndicator } from 'react-native';
+import { useTheme } from 'app/features/theme/theme-context';
 
 export default function LandingPage() {
     const { user, isLoading, role } = useAuth();
     const router = useRouter();
+    const { colors } = useTheme();
 
     useEffect(() => {
         if (!isLoading) {
@@ -30,7 +32,7 @@ export default function LandingPage() {
         <View style={{
             flex: 1,
             minHeight: '100vh',
-            backgroundColor: '#fafaf9',
+            backgroundColor: colors.background,
             alignItems: 'center',
             justifyContent: 'center',
         }}>
@@ -44,16 +46,16 @@ export default function LandingPage() {
                 marginBottom: 24,
                 borderWidth: 1,
                 borderColor: '#fed7aa',
-                shadowColor: '#E68B2C',
+                shadowColor: colors.primary,
                 shadowOffset: { width: 0, height: 8 },
                 shadowOpacity: 0.15,
                 shadowRadius: 20,
             }}>
-                <ActivityIndicator size="large" color="#E68B2C" />
+                <ActivityIndicator size="large" color={colors.primary} />
             </View>
             <Text style={{ 
                 fontSize: 16, 
-                color: '#78716c', 
+                color: colors.textSecondary, 
                 fontWeight: '600',
                 letterSpacing: 0.3 
             }}>

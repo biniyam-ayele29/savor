@@ -10,10 +10,10 @@ import { NotificationPermissionButton } from 'app/features/notifications/notific
 import { useToast } from 'app/features/notifications';
 
 const STATUS_COLORS = {
-    pending: { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa', label: 'Pending' },
-    preparing: { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe', label: 'Preparing' },
-    delivering: { bg: '#faf5ff', text: '#7c3aed', border: '#e9d5ff', label: 'Delivering' },
-    delivered: { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0', label: 'Delivered' }
+    pending: { bg: '#fff7ed', text: '#E68B2C', border: '#fed7aa', label: 'Pending' },
+    preparing: { bg: '#fffbeb', text: '#D97706', border: '#fde68a', label: 'Preparing' },
+    delivering: { bg: '#fef3c7', text: '#B45309', border: '#fcd34d', label: 'Delivering' },
+    delivered: { bg: '#f0fdf4', text: '#7FA14B', border: '#86efac', label: 'Delivered' }
 };
 
 export default function OrdersPage() {
@@ -51,7 +51,7 @@ export default function OrdersPage() {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 100%)',
+                backgroundImage: colors.gradientBackground,
             }}>
                 <View style={{
                     width: 48,
@@ -62,9 +62,9 @@ export default function OrdersPage() {
                     justifyContent: 'center',
                     marginBottom: 20,
                 }}>
-                    <ActivityIndicator size="large" color="#E68B2C" />
+                    <ActivityIndicator size="large" color={colors.primary} />
                 </View>
-                <Text style={{ fontSize: 15, color: '#78716c', fontWeight: '600' }}>Loading Orders...</Text>
+                <Text style={{ fontSize: 15, color: colors.textSecondary, fontWeight: '600' }}>Loading Orders...</Text>
             </View>
         );
     }
@@ -91,7 +91,7 @@ export default function OrdersPage() {
 
     return (
         <ScrollView
-            style={{ flex: 1, backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 50%, #e7e5e4 100%)' }}
+            style={{ flex: 1, backgroundImage: colors.gradientBackground }}
             contentContainerStyle={{ alignItems: 'center', paddingVertical: 40 }}
         >
             <View style={{ maxWidth: 1280, width: '100%', padding: 40 }}>
