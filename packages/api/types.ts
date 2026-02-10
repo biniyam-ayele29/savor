@@ -52,6 +52,7 @@ export interface Employee {
     name: string;
     email: string;
     phone?: string;
+    telegram_chat_id?: string;
     position?: string;
     avatarUrl?: string;
     isActive: boolean;

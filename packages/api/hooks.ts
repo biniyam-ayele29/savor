@@ -59,7 +59,12 @@ export function useOrders() {
         queryFn: async () => {
             const { data: ordersData, error: ordersError } = await supabase.rpc('get_company_orders');
 
-            if (ordersError) throw ordersError;
+            if (ordersError) {
+                console.error('Error fetching orders:', ordersError);
+                throw ordersError;
+            }
+
+            console.log('📦 Orders fetched:', ordersData?.length || 0, 'orders');
 
             if (!ordersData || ordersData.length === 0) return [];
 
@@ -92,6 +97,7 @@ export function useOrders() {
                 employeeName: order.employee_name,
                 waiterName: order.waiter_name,
                 waiterPhone: order.waiter_phone,
+                waiterAvatarUrl: order.waiter_avatar_url,
             }));
         },
         refetchInterval: 5000 // Auto-refresh every 5 seconds for real-time feel

@@ -59,7 +59,7 @@ export function OrderCard({ order, onPress, showTimer }: OrderCardProps) {
                 borderTopColor: '#f5f5f4',
             }}>
                 <View style={{
-                    backgroundImage: 'linear-gradient(90deg, #b45309, #ea580c)',
+                    backgroundImage: 'linear-gradient(90deg, #E68B2C, #D97706)',
                     paddingHorizontal: 12,
                     paddingVertical: 4,
                     borderRadius: 8,

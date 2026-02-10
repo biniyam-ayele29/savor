@@ -16,22 +16,22 @@ const categoryIcons: Record<string, string> = {
 
 const categoryColors: Record<string, { primary: string; bg: string; gradient: string; btnGradient: string }> = {
     drinks: {
-        primary: '#b45309',
+        primary: '#E68B2C',
         bg: '#fff7ed',
         gradient: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
-        btnGradient: 'linear-gradient(135deg, #ea580c 0%, #b45309 50%, #92400e 100%)',
+        btnGradient: 'linear-gradient(135deg, #E68B2C 0%, #D97706 50%, #B45309 100%)',
     },
     food: {
-        primary: '#be123c',
-        bg: '#fff1f2',
-        gradient: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
-        btnGradient: 'linear-gradient(135deg, #e11d48 0%, #be123c 50%, #9f1239 100%)',
+        primary: '#7FA14B',
+        bg: '#f0f9e8',
+        gradient: 'linear-gradient(135deg, #f0f9e8 0%, #e5f5d5 100%)',
+        btnGradient: 'linear-gradient(135deg, #7FA14B 0%, #6B8E3F 50%, #567633 100%)',
     },
     snacks: {
-        primary: '#1d4ed8',
-        bg: '#eff6ff',
-        gradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-        btnGradient: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)',
+        primary: '#3B2415',
+        bg: '#f5f1ed',
+        gradient: 'linear-gradient(135deg, #f5f1ed 0%, #ebe5df 100%)',
+        btnGradient: 'linear-gradient(135deg, #3B2415 0%, #2A1A0F 50%, #1A0F08 100%)',
     },
 };
 

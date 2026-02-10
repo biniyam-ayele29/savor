@@ -1,6 +1,9 @@
 import { StylesProvider } from './styles-provider'
 import { APIProvider } from '@my-app/api'
 import { NavBar } from './navbar'
+import { AuthGuard } from 'app/features/auth/auth-guard'
+import { ThemeProvider } from 'app/features/theme/theme-context'
+import { ToastProvider, ToastContainer } from 'app/features/notifications'
 import './globals.css'
 
 export const metadata = {
@@ -17,10 +20,17 @@ export default function RootLayout({
     <html lang="en">
       <body style={{ margin: 0, padding: 0 }}>
         <APIProvider>
-          <StylesProvider>
-            <NavBar />
-            {children}
-          </StylesProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <StylesProvider>
+                <AuthGuard>
+                  <NavBar />
+                  {children}
+                  <ToastContainer />
+                </AuthGuard>
+              </StylesProvider>
+            </ToastProvider>
+          </ThemeProvider>
         </APIProvider>
       </body>
     </html>

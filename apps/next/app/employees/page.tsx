@@ -82,7 +82,7 @@ export default function EmployeesPage() {
                     justifyContent: 'center',
                     marginBottom: 20,
                 }}>
-                    <ActivityIndicator size="large" color="#b45309" />
+                    <ActivityIndicator size="large" color="#E68B2C" />
                 </View>
                 <Text style={{ fontSize: 15, color: '#78716c', fontWeight: '600' }}>Verifying authorization...</Text>
             </View>
@@ -265,7 +265,7 @@ export default function EmployeesPage() {
                                     borderWidth: 1,
                                     borderColor: '#fed7aa',
                                 }}>
-                                    <Text style={{ fontSize: 18, fontWeight: '800', color: '#b45309' }}>{employee.name[0]}</Text>
+                                    <Text style={{ fontSize: 18, fontWeight: '800', color: '#E68B2C' }}>{employee.name[0]}</Text>
                                 </View>
                                 <View>
                                     <Text style={{ fontSize: 16, fontWeight: '700', color: '#1c1917' }}>{employee.name}</Text>
@@ -298,7 +298,7 @@ export default function EmployeesPage() {
                                     borderWidth: 1,
                                     borderColor: '#fed7aa',
                                 }}>
-                                    <Text style={{ color: '#b45309', fontSize: 14, fontWeight: '700' }}>Edit</Text>
+                                    <Text style={{ color: '#E68B2C', fontSize: 14, fontWeight: '700' }}>Edit</Text>
                                 </View>
                             </Pressable>
                         </View>

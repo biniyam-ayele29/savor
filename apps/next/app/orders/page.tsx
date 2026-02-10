@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
-import { useOrders, useUpdateOrderStatus, useAuth } from '@my-app/api';
+import { useOrders, useUpdateOrderStatus, useAuth, useOrderNotifications, useTelegramNotifications, setToastCallback } from '@my-app/api';
 import { useRouter } from 'next/navigation';
 import { Order, OrderStatus } from '@my-app/api/types';
+import { useTheme } from 'app/features/theme/theme-context';
+import { NotificationPermissionButton } from 'app/features/notifications/notification-button';
+import { useToast } from 'app/features/notifications';
 
 const STATUS_COLORS = {
     pending: { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa', label: 'Pending' },
@@ -16,8 +19,23 @@ const STATUS_COLORS = {
 export default function OrdersPage() {
     const { user, companyId, companyName, isLoading: authLoading } = useAuth();
     const router = useRouter();
+    const { colors } = useTheme();
+    const { showToast } = useToast();
     const { data: orders = [], isLoading: ordersLoading } = useOrders();
     const updateStatus = useUpdateOrderStatus();
+
+    // Set up toast callback for notifications
+    useEffect(() => {
+        setToastCallback((title, message, type) => {
+            showToast({ title, message, type });
+        });
+    }, [showToast]);
+
+    // Enable real-time notifications for admin
+    useOrderNotifications(companyId || undefined);
+    
+    // Enable Telegram notifications
+    useTelegramNotifications();
 
     const [view, setView] = useState<'live' | 'history'>('live');
 
@@ -44,7 +62,7 @@ export default function OrdersPage() {
                     justifyContent: 'center',
                     marginBottom: 20,
                 }}>
-                    <ActivityIndicator size="large" color="#b45309" />
+                    <ActivityIndicator size="large" color="#E68B2C" />
                 </View>
                 <Text style={{ fontSize: 15, color: '#78716c', fontWeight: '600' }}>Loading Orders...</Text>
             </View>
@@ -79,29 +97,31 @@ export default function OrdersPage() {
             <View style={{ maxWidth: 1280, width: '100%', padding: 40 }}>
                 {/* Header */}
                 <View style={{ marginBottom: 48, alignItems: 'center' }}>
-                    <Text style={{
-                        fontSize: 44,
-                        fontWeight: '900',
-                        color: '#1c1917',
-                        letterSpacing: -1,
-                        textAlign: 'center',
-                        marginBottom: 12,
-                    }}>
-                        Order Management
-                    </Text>
-                    <Text style={{ color: '#78716c', fontSize: 18, fontWeight: '500', textAlign: 'center', marginBottom: 32 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 32 }}>
+                        <Text style={{
+                            fontSize: 44,
+                            fontWeight: '900',
+                            color: colors.text,
+                            letterSpacing: -1,
+                            textAlign: 'center',
+                        }}>
+                            Order Management
+                        </Text>
+                        <NotificationPermissionButton />
+                    </View>
+                    <Text style={{ color: colors.textSecondary, fontSize: 18, fontWeight: '500', textAlign: 'center', marginBottom: 32 }}>
                         Track live deliveries and review your company order history
                     </Text>
 
                     {/* View Switcher */}
                     <View style={{
                         flexDirection: 'row',
-                        backgroundImage: 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',
+                        backgroundImage: colors.gradientSurface,
                         padding: 6,
                         borderRadius: 16,
                         width: 340,
                         borderWidth: 1,
-                        borderColor: 'rgba(0,0,0,0.04)',
+                        borderColor: colors.border,
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.04,
@@ -227,7 +247,7 @@ export default function OrdersPage() {
 
                                 <View style={{ alignItems: 'flex-end', gap: 16 }}>
                                     <View style={{
-                                        backgroundImage: 'linear-gradient(90deg, #b45309, #ea580c)',
+                                        backgroundImage: 'linear-gradient(90deg, #E68B2C, #D97706)',
                                         paddingHorizontal: 14,
                                         paddingVertical: 6,
                                         borderRadius: 10,

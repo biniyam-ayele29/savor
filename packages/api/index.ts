@@ -4,4 +4,7 @@ export * from './store';
 export * from './supabase';
 export * from './hooks';
 export * from './auth-provider';
+export * from './use-order-notifications';
+export * from './use-telegram-notifications';
+export * from './telegram';
 export * from '@tanstack/react-query';

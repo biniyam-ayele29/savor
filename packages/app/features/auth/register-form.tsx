@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { supabase } from '@my-app/api';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'app/features/theme/theme-context';
 
 export function RegisterForm() {
     const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ export function RegisterForm() {
     const [selectedCompany, setSelectedCompany] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { colors } = useTheme();
 
     useEffect(() => {
         const fetchCompanies = async () => {
@@ -71,23 +73,34 @@ export function RegisterForm() {
         }
     };
 
+    const inputStyle = {
+        backgroundColor: colors.background,
+        padding: 16,
+        borderRadius: 12,
+        border: `2px solid ${colors.border}`,
+        fontSize: 16,
+        color: colors.text
+    };
+
     return (
         <View style={{ gap: 20, width: '100%' }}>
             <View>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>Full Name</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase' }}>Full Name</Text>
                 <TextInput
-                    style={{ backgroundColor: '#f9fafb', padding: 16, borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16 }}
+                    style={inputStyle}
                     placeholder="e.g. John Doe"
+                    placeholderTextColor={colors.textTertiary}
                     value={fullName}
                     onChangeText={setFullName}
                 />
             </View>
 
             <View>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>Phone Number</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase' }}>Phone Number</Text>
                 <TextInput
-                    style={{ backgroundColor: '#f9fafb', padding: 16, borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16 }}
+                    style={inputStyle}
                     placeholder="+1234567890"
+                    placeholderTextColor={colors.textTertiary}
                     value={phoneNumber}
                     onChangeText={setPhoneNumber}
                     keyboardType="phone-pad"
@@ -95,18 +108,19 @@ export function RegisterForm() {
             </View>
 
             <View>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>Company</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase' }}>Company</Text>
                 {Platform.OS === 'web' ? (
                     <select
                         style={{
-                            backgroundColor: '#f9fafb',
+                            backgroundColor: colors.background,
                             padding: 16,
                             borderRadius: 12,
-                            border: '2px solid #e5e7eb',
+                            border: `2px solid ${colors.border}`,
                             fontSize: 16,
                             width: '100%',
                             appearance: 'none',
-                            outline: 'none'
+                            outline: 'none',
+                            color: colors.text
                         }}
                         value={selectedCompany}
                         onChange={(e) => setSelectedCompany(e.target.value)}
@@ -124,10 +138,11 @@ export function RegisterForm() {
             </View>
 
             <View>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>Work Email (name@company.com)</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase' }}>Work Email (name@company.com)</Text>
                 <TextInput
-                    style={{ backgroundColor: '#f9fafb', padding: 16, borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16 }}
+                    style={inputStyle}
                     placeholder="alice@techinnovators.com"
+                    placeholderTextColor={colors.textTertiary}
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
@@ -136,10 +151,11 @@ export function RegisterForm() {
             </View>
 
             <View>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>Create Password</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase' }}>Create Password</Text>
                 <TextInput
-                    style={{ backgroundColor: '#f9fafb', padding: 16, borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16 }}
+                    style={inputStyle}
                     placeholder="••••••••"
+                    placeholderTextColor={colors.textTertiary}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
@@ -147,10 +163,11 @@ export function RegisterForm() {
             </View>
 
             <View>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8, textTransform: 'uppercase' }}>Confirm Password</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase' }}>Confirm Password</Text>
                 <TextInput
-                    style={{ backgroundColor: '#f9fafb', padding: 16, borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16 }}
+                    style={inputStyle}
                     placeholder="••••••••"
+                    placeholderTextColor={colors.textTertiary}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry
@@ -160,7 +177,15 @@ export function RegisterForm() {
             <Pressable
                 onPress={handleRegister}
                 disabled={isLoading}
-                style={{ backgroundColor: '#ea580c', padding: 18, borderRadius: 12, alignItems: 'center', marginTop: 10, opacity: isLoading ? 0.7 : 1 }}
+                style={{ 
+                    backgroundImage: colors.gradientPrimary, 
+                    padding: 18, 
+                    borderRadius: 12, 
+                    alignItems: 'center', 
+                    marginTop: 10, 
+                    opacity: isLoading ? 0.7 : 1,
+                    boxShadow: `0 10px 15px -3px ${colors.primary}40`
+                }}
             >
                 {isLoading ? <ActivityIndicator color="white" /> : <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>Register Account</Text>}
             </Pressable>

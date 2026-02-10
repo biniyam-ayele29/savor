@@ -64,7 +64,7 @@ export default function EmployeeDetailPage() {
                         <Text style={{ fontSize: 48 }}>👤</Text>
                     </View>
                     <Text style={{ fontSize: 32, fontWeight: '800', color: '#1c1917', marginBottom: 6 }}>{employee.name}</Text>
-                    <Text style={{ fontSize: 18, color: '#b45309', fontWeight: '600', marginBottom: 20 }}>{employee.position || 'Employee'}</Text>
+                    <Text style={{ fontSize: 18, color: '#E68B2C', fontWeight: '600', marginBottom: 20 }}>{employee.position || 'Employee'}</Text>
 
                     <View style={{
                         backgroundImage: 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)',

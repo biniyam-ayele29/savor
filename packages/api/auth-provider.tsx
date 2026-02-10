@@ -140,6 +140,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signOut = async () => {
         await supabase.auth.signOut();
+        // Redirect to login page after sign out
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+        }
     };
 
     return (

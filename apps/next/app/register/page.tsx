@@ -4,12 +4,15 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { RegisterForm } from 'app/features/auth/register-form';
 import { TextLink } from 'solito/link';
+import { useTheme } from 'app/features/theme/theme-context';
 
 export default function RegisterPage() {
+    const { colors } = useTheme();
+    
     return (
         <View style={{
             flex: 1,
-            backgroundImage: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 50%, #e7e5e4 100%)',
+            backgroundImage: colors.gradientBackground,
             justifyContent: 'center',
             alignItems: 'center',
             padding: 24,
@@ -18,7 +21,7 @@ export default function RegisterPage() {
                 <Text style={{
                     fontSize: 36,
                     fontWeight: '900',
-                    color: '#1c1917',
+                    color: colors.text,
                     marginBottom: 10,
                     textAlign: 'center',
                     letterSpacing: -0.5,
@@ -26,7 +29,7 @@ export default function RegisterPage() {
                     Create Admin Account
                 </Text>
                 <Text style={{
-                    color: '#78716c',
+                    color: colors.textSecondary,
                     textAlign: 'center',
                     marginBottom: 40,
                     fontSize: 16,
@@ -36,11 +39,11 @@ export default function RegisterPage() {
                 </Text>
 
                 <View style={{
-                    backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #fafaf9 100%)',
+                    backgroundImage: colors.gradientSurface,
                     padding: 36,
                     borderRadius: 20,
                     borderWidth: 1,
-                    borderColor: '#e7e5e4',
+                    borderColor: colors.border,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.05,
@@ -50,9 +53,9 @@ export default function RegisterPage() {
                 </View>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 32, gap: 8 }}>
-                    <Text style={{ color: '#78716c', fontSize: 15 }}>Already have an account?</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 15 }}>Already have an account?</Text>
                     <TextLink href="/login">
-                        <Text style={{ color: '#b45309', fontWeight: '700', fontSize: 15 }}>Sign In</Text>
+                        <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 15 }}>Sign In</Text>
                     </TextLink>
                 </View>
             </View>

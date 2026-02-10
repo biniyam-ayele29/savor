@@ -37,15 +37,38 @@ body {
     Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
+/* Theme transitions */
+html[data-theme="light"] body {
+  background-color: #fafaf9;
+  color: #1c1917;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html[data-theme="dark"] body {
+  background-color: #0c0a09;
+  color: #fafaf9;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 /* Order page recipient select - polished focus/hover */
 .order-recipient-select {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .order-recipient-select:focus {
   outline: none;
-  border-color: #b45309 !important;
-  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.15);
+  border-color: #E68B2C !important;
+  box-shadow: 0 0 0 3px rgba(230, 139, 44, 0.15);
 }
 .order-recipient-select:hover {
   border-color: #d6d3d1 !important;
+}
+
+/* Dark theme adjustments for select */
+html[data-theme="dark"] .order-recipient-select {
+  background-color: #1c1917;
+  color: #fafaf9;
+  border-color: #292524;
+}
+html[data-theme="dark"] .order-recipient-select:hover {
+  border-color: #44403c !important;
 }

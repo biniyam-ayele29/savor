@@ -61,7 +61,7 @@ export default function CompaniesPage() {
                     justifyContent: 'center',
                     marginBottom: 20,
                 }}>
-                    <ActivityIndicator size="large" color="#b45309" />
+                    <ActivityIndicator size="large" color="#E68B2C" />
                 </View>
                 <Text style={{ fontSize: 15, color: '#78716c', fontWeight: '600' }}>Loading companies...</Text>
             </View>
@@ -82,11 +82,11 @@ export default function CompaniesPage() {
                     <Pressable
                         onPress={() => setShowForm(!showForm)}
                         style={({ pressed }) => ({
-                            backgroundImage: showForm ? 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)' : 'linear-gradient(135deg, #ea580c 0%, #b45309 100%)',
+                            backgroundImage: showForm ? 'linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%)' : 'linear-gradient(135deg, #E68B2C 0%, #D97706 100%)',
                             paddingHorizontal: 28,
                             paddingVertical: 14,
                             borderRadius: 14,
-                            shadowColor: showForm ? 'transparent' : '#b45309',
+                            shadowColor: showForm ? 'transparent' : '#E68B2C',
                             shadowOffset: { width: 0, height: 4 },
                             shadowOpacity: showForm ? 0 : 0.3,
                             shadowRadius: 12,
@@ -223,7 +223,7 @@ export default function CompaniesPage() {
                                             borderWidth: 1,
                                             borderColor: '#fed7aa',
                                         }}>
-                                            <Text style={{ color: '#b45309', fontSize: 13, fontWeight: '700' }}>Details</Text>
+                                            <Text style={{ color: '#E68B2C', fontSize: 13, fontWeight: '700' }}>Details</Text>
                                         </View>
                                     </TextLink>
                                 </View>
@@ -258,11 +258,11 @@ export default function CompaniesPage() {
                         <Pressable
                             onPress={() => setShowForm(true)}
                             style={({ pressed }) => ({
-                                backgroundImage: 'linear-gradient(135deg, #ea580c 0%, #b45309 100%)',
+                                backgroundImage: 'linear-gradient(135deg, #E68B2C 0%, #D97706 100%)',
                                 paddingHorizontal: 28,
                                 paddingVertical: 14,
                                 borderRadius: 14,
-                                shadowColor: '#b45309',
+                                shadowColor: '#E68B2C',
                                 shadowOffset: { width: 0, height: 4 },
                                 shadowOpacity: 0.3,
                                 shadowRadius: 12,

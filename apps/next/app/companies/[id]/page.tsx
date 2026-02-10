@@ -174,7 +174,7 @@ export default function CompanyDetailPage() {
                                 <Text style={{ fontSize: 22, fontWeight: '900', marginBottom: 20, color: '#111827' }}>Current Administrators</Text>
                                 <View style={{ backgroundColor: 'white', borderRadius: 24, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
                                     {adminsLoading ? (
-                                        <View style={{ padding: 48 }}><ActivityIndicator color="#ea580c" /></View>
+                                        <View style={{ padding: 48 }}><ActivityIndicator color="#E68B2C" /></View>
                                     ) : admins.length > 0 ? (
                                         admins.map((adm, idx) => (
                                             <View key={adm.id} style={{ padding: 24, borderBottom: idx === admins.length - 1 ? 0 : '1px solid #f3f4f6', flexDirection: 'row', alignItems: 'center', gap: 16 }}>
@@ -231,13 +231,13 @@ export default function CompanyDetailPage() {
                                             onPress={handleAddAdmin}
                                             disabled={isCreating}
                                             style={{
-                                                backgroundColor: '#ea580c',
+                                                backgroundColor: '#E68B2C',
                                                 padding: 18,
                                                 borderRadius: 14,
                                                 alignItems: 'center',
                                                 marginTop: 12,
                                                 opacity: isCreating ? 0.7 : 1,
-                                                shadowColor: '#ea580c',
+                                                shadowColor: '#E68B2C',
                                                 shadowOffset: { width: 0, height: 4 },
                                                 shadowOpacity: 0.2,
                                                 shadowRadius: 10,

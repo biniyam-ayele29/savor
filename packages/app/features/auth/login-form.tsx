@@ -5,12 +5,14 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import { supabase } from '@my-app/api';
 import { useRouter } from 'next/navigation';
 import { TextLink } from 'solito/link';
+import { useTheme } from 'app/features/theme/theme-context';
 
 export function LoginForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { colors } = useTheme();
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -41,7 +43,7 @@ export function LoginForm() {
                 <Text style={{
                     fontSize: 13,
                     fontWeight: '800',
-                    color: '#374151',
+                    color: colors.textSecondary,
                     marginBottom: 12,
                     textTransform: 'uppercase',
                     letterSpacing: 1.2
@@ -50,16 +52,16 @@ export function LoginForm() {
                 </Text>
                 <TextInput
                     style={{
-                        backgroundColor: '#f9fafb',
+                        backgroundColor: colors.background,
                         padding: 20,
                         borderRadius: 20,
-                        border: '2px solid #f3f4f6',
+                        border: `2px solid ${colors.border}`,
                         fontSize: 16,
-                        color: '#111827',
+                        color: colors.text,
                         fontWeight: '500'
                     }}
                     placeholder="name@company.com"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor={colors.textTertiary}
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
@@ -72,28 +74,28 @@ export function LoginForm() {
                     <Text style={{
                         fontSize: 13,
                         fontWeight: '800',
-                        color: '#374151',
+                        color: colors.textSecondary,
                         textTransform: 'uppercase',
                         letterSpacing: 1.2
                     }}>
                         Password
                     </Text>
                     <Pressable>
-                        <Text style={{ fontSize: 13, color: '#6b7280', fontWeight: '600' }}>Forgot?</Text>
+                        <Text style={{ fontSize: 13, color: colors.textTertiary, fontWeight: '600' }}>Forgot?</Text>
                     </Pressable>
                 </View>
                 <TextInput
                     style={{
-                        backgroundColor: '#f9fafb',
+                        backgroundColor: colors.background,
                         padding: 20,
                         borderRadius: 20,
-                        border: '2px solid #f3f4f6',
+                        border: `2px solid ${colors.border}`,
                         fontSize: 16,
-                        color: '#111827',
+                        color: colors.text,
                         fontWeight: '500'
                     }}
                     placeholder="••••••••"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor={colors.textTertiary}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
@@ -104,13 +106,13 @@ export function LoginForm() {
                 onPress={handleLogin}
                 disabled={isLoading}
                 style={{
-                    backgroundColor: '#111827',
+                    backgroundImage: colors.gradientPrimary,
                     padding: 20,
                     borderRadius: 20,
                     alignItems: 'center',
                     marginTop: 12,
                     opacity: isLoading ? 0.7 : 1,
-                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                    boxShadow: `0 20px 25px -5px ${colors.primary}40, 0 10px 10px -5px ${colors.primary}20`
                 }}
             >
                 {isLoading ? (
@@ -123,9 +125,8 @@ export function LoginForm() {
             </Pressable>
 
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 12, gap: 8 }}>
-                <Text style={{ color: '#6b7280', fontWeight: '500' }}>New admin?</Text>
                 <TextLink href="/register">
-                    <Text style={{ color: '#ea580c', fontWeight: '800' }}>Create account</Text>
+                    <Text style={{ color: colors.primary, fontWeight: '800' }}>Sign up</Text>
                 </TextLink>
             </View>
         </View>
