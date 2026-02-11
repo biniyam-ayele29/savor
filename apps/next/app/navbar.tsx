@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@my-app/api';
 import { ThemeToggle } from 'app/features/theme/theme-toggle';
 import { useTheme } from 'app/features/theme/theme-context';
+import { NotificationBell } from 'app/features/notifications/notification-bell';
 
 const NAV_ITEMS = [
     { label: 'Dashboard', href: '/dashboard', icon: '📊' },
@@ -95,8 +96,27 @@ export function NavBar() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 32 }}>
                         {user && (
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
+                                {/* Notification Bell */}
+                                <NotificationBell />
+                                
+                                {/* Separator */}
+                                <View style={{ 
+                                    width: 1, 
+                                    height: 24, 
+                                    backgroundColor: colors.border,
+                                    opacity: 0.5 
+                                }} />
+                                
                                 {/* Theme Toggle */}
                                 <ThemeToggle />
+                                
+                                {/* Separator */}
+                                <View style={{ 
+                                    width: 1, 
+                                    height: 24, 
+                                    backgroundColor: colors.border,
+                                    opacity: 0.5 
+                                }} />
                                 
                                 <View style={{ alignItems: 'flex-end' }}>
                                     <Text style={{ color: colors.text, fontSize: 14, fontWeight: '800' }}>{user.email?.split('@')[0]}</Text>

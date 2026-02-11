@@ -7,15 +7,25 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 
 // This will be injected by the component using this hook
 let toastCallback: ((title: string, message: string, type: 'success' | 'info' | 'warning' | 'error') => void) | null = null;
+let notificationStoreCallback: ((title: string, body: string, type: 'new' | 'update') => void) | null = null;
 
 export function setToastCallback(callback: typeof toastCallback) {
     toastCallback = callback;
+}
+
+export function setNotificationStoreCallback(callback: typeof notificationStoreCallback) {
+    notificationStoreCallback = callback;
 }
 
 export function useOrderNotifications(companyId?: string) {
     const queryClient = useQueryClient();
 
     const showNotification = useCallback((title: string, body: string, type: 'new' | 'update' = 'new') => {
+        // Save to notification store
+        if (notificationStoreCallback) {
+            notificationStoreCallback(title, body, type);
+        }
+
         // Show in-app toast notification
         if (toastCallback) {
             toastCallback(title, body, type === 'new' ? 'success' : 'info');
